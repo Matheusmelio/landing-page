@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-hidden="true">
+  <title>MotStart</title>
+  <defs>
+    <linearGradient id="motstart-purple" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#9333ea"/>
+    </linearGradient>
+    <filter id="motstart-symbol-shadow" x="-15%" y="-15%" width="130%" height="130%">
+      <feDropShadow dx="0" dy="1.2" stdDeviation="1.5" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+    <filter id="motstart-disc-shadow" x="-20%" y="-20%" width="140%" height="140%">
+      <feDropShadow dx="0" dy="3" stdDeviation="4" flood-color="#000" flood-opacity="0.45"/>
+    </filter>
+  </defs>
+  <circle cx="50" cy="50" r="50" fill="url(#motstart-purple)" filter="url(#motstart-disc-shadow)"/>
+  <g fill="#fff" filter="url(#motstart-symbol-shadow)">
+    <rect x="22" y="44" width="12" height="28" rx="3"/>
+    <rect x="37" y="28" width="14" height="44" rx="3"/>
+    <rect x="54" y="44" width="12" height="28" rx="3"/>
+  </g>
+</svg>

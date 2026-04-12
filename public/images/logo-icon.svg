@@ -1,0 +1,27 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" role="img" aria-hidden="true">
+  <title>MotStart</title>
+  <defs>
+    <linearGradient id="motstart-disc" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#c084fc"/>
+      <stop offset="100%" stop-color="#7c3aed"/>
+    </linearGradient>
+    <filter id="disc-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="1.5" dy="4" stdDeviation="4.5" flood-color="#000" flood-opacity="0.38"/>
+    </filter>
+    <filter id="symbol-shadow" x="-25%" y="-25%" width="150%" height="150%">
+      <feDropShadow dx="-0.8" dy="2.2" stdDeviation="2" flood-color="#000" flood-opacity="0.28"/>
+    </filter>
+    <linearGradient id="symbol-fill" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="100%" stop-color="#f4f0ff"/>
+    </linearGradient>
+  </defs>
+  <circle cx="50" cy="50" r="48" fill="url(#motstart-disc)" filter="url(#disc-shadow)"/>
+  <!-- Arco em ?: s� laterais em baixo; v�o central roxo + c�rculo branco -->
+  <g fill="url(#symbol-fill)" filter="url(#symbol-shadow)">
+    <rect x="22" y="28" width="56" height="14" rx="3.5"/>
+    <rect x="22" y="42" width="14" height="32" rx="3.5"/>
+    <rect x="64" y="42" width="14" height="32" rx="3.5"/>
+    <circle cx="50" cy="60" r="5"/>
+  </g>
+</svg>
