@@ -3293,6 +3293,53 @@ a.btn {
   font-family: ui-monospace, Consolas, monospace;
   font-size: 0.8125rem;
   line-height: 1.45;
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-break: break-word;
+}
+
+.creator-editor .auth-field input,
+.creator-editor .auth-field textarea {
+  min-width: 0;
+  max-width: 100%;
+}
+
+@media (max-width: 560px) {
+  .creator-publish__callout {
+    padding: 1rem 0.95rem;
+  }
+
+  .creator-publish__card-top {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .creator-publish__card-price {
+    white-space: normal;
+  }
+
+  .creator-publish__card-actions .btn-primary {
+    width: 100%;
+    max-width: 100%;
+    justify-content: center;
+  }
+
+  .creator-editor__section-title {
+    font-size: 1rem;
+  }
+
+  .creator-editor__cur-actions .btn {
+    width: 100%;
+    justify-content: center;
+  }
+
+  .creator-editor__row {
+    padding: 0.85rem;
+  }
+
+  .creator-editor__block {
+    padding: 0.85rem;
+  }
 }
 
 .home-landing-about-cta {
