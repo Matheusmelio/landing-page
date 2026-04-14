@@ -1,11 +1,14 @@
 import { useState } from 'react'
-import { Link, Navigate, useSearchParams } from 'react-router-dom'
+import { Link, Navigate, useLocation, useSearchParams } from 'react-router-dom'
 import { processCheckoutMock } from '../api/mockClient'
+import { useAuth } from '../auth/AuthContext'
 import { getPlanById } from '../data/plans'
 import { MainHeader } from '../components/MainHeader'
 import { setActivePlanId } from '../lib/userCourseProgress'
 
 export function CheckoutPage() {
+  const { user } = useAuth()
+  const location = useLocation()
   const [params] = useSearchParams()
   const planIdParam = params.get('plan')
   const plan = getPlanById(planIdParam)
@@ -19,6 +22,11 @@ export function CheckoutPage() {
 
   if (!plan) {
     return <Navigate to="/planos" replace />
+  }
+
+  if (!user) {
+    const from = `${location.pathname}${location.search}`
+    return <Navigate to="/login" replace state={{ from }} />
   }
 
   const submit = async (e: React.FormEvent) => {

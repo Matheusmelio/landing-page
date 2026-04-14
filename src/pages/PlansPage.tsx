@@ -1,8 +1,11 @@
 import { Link } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext'
 import { PLANS } from '../data/plans'
 import { MainHeader } from '../components/MainHeader'
 
 export function PlansPage() {
+  const { user } = useAuth()
+
   return (
     <div className="page">
       <MainHeader />
@@ -39,9 +42,19 @@ export function PlansPage() {
                   <li key={b}>{b}</li>
                 ))}
               </ul>
-              <Link to={`/checkout?plan=${p.id}`} className="btn btn-primary btn-block">
-                Assinar este plano
-              </Link>
+              {user ? (
+                <Link to={`/checkout?plan=${p.id}`} className="btn btn-primary btn-block">
+                  Assinar este plano
+                </Link>
+              ) : (
+                <Link
+                  to="/login"
+                  state={{ from: `/checkout?plan=${p.id}` }}
+                  className="btn btn-primary btn-block"
+                >
+                  Assinar este plano
+                </Link>
+              )}
             </article>
           ))}
         </div>
