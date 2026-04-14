@@ -48,3 +48,7 @@ export function addCreatorCourse(course: Omit<CreatorCourseDraft, 'id' | 'create
   writeAll(list)
   return row
 }
+
+export function getCreatorCourseById(id: string): CreatorCourseDraft | undefined {
+  return readAll().find((c) => c.id === id)
+}

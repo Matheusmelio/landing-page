@@ -2,7 +2,11 @@ import { HOME_COURSES } from '../data/homeCourses'
 import type { CourseBucket } from '../data/homeCourses'
 
 const KEY = 'motstart_course_progress_v1'
-const PLAN_KEY = 'motstart_active_plan_v1'
+
+/** Plano ativo guardado por e-mail do utilizador (só após checkout demo). */
+function userPlanStorageKey(email: string) {
+  return `motstart_active_plan_user_v1:${email.toLowerCase().trim()}`
+}
 
 /**
  * Demonstração: 12 em andamento (4 linhas × 3 no grid), 4 disponíveis, 2 concluídos.
@@ -75,17 +79,22 @@ export function setCourseBucket(courseId: string, bucket: CourseBucket) {
   localStorage.setItem(KEY, JSON.stringify(map))
 }
 
-export function setActivePlanId(planId: string | null) {
-  if (!planId) localStorage.removeItem(PLAN_KEY)
-  else localStorage.setItem(PLAN_KEY, planId)
+/** Define o plano ativo para este e-mail (checkout demo). */
+export function setActivePlanIdForUser(email: string, planId: string | null) {
+  const k = userPlanStorageKey(email)
+  if (!planId) localStorage.removeItem(k)
+  else localStorage.setItem(k, planId)
+  window.dispatchEvent(new Event('motstart-plan-change'))
 }
 
-export function getActivePlanId(): string | null {
-  return localStorage.getItem(PLAN_KEY)
+/** Plano ativo só existe se este utilizador concluiu a compra (demo). */
+export function getActivePlanIdForUser(email: string | null | undefined): string | null {
+  if (!email) return null
+  return localStorage.getItem(userPlanStorageKey(email))
 }
 
-export function hasActivePlan(): boolean {
-  return !!getActivePlanId()
+export function hasActivePlanForUser(email: string | null | undefined): boolean {
+  return !!getActivePlanIdForUser(email)
 }
 
 /** Conta cursos por aba (para badges) */

@@ -5,7 +5,7 @@ import { useAuth } from '../auth/AuthContext'
 import { MainHeader } from '../components/MainHeader'
 import { HOME_COURSES } from '../data/homeCourses'
 import { getTeachingMeta } from '../data/courseTeachingMeta'
-import { getCourseProgressMap, hasActivePlan, setCourseBucket } from '../lib/userCourseProgress'
+import { getCourseProgressMap, hasActivePlanForUser, setCourseBucket } from '../lib/userCourseProgress'
 
 export function CoursePurchasePage() {
   const { courseId = '' } = useParams()
@@ -23,7 +23,7 @@ export function CoursePurchasePage() {
 
   const course = useMemo(() => HOME_COURSES.find((c) => c.id === courseId), [courseId])
   const meta = getTeachingMeta(courseId)
-  const hasPlan = hasActivePlan()
+  const hasPlan = Boolean(user && hasActivePlanForUser(user.email))
 
   useEffect(() => {
     const refresh = () => setProgress(getCourseProgressMap())

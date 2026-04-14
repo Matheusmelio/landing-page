@@ -4,7 +4,7 @@ import { processCheckoutMock } from '../api/mockClient'
 import { useAuth } from '../auth/AuthContext'
 import { getPlanById } from '../data/plans'
 import { MainHeader } from '../components/MainHeader'
-import { setActivePlanId } from '../lib/userCourseProgress'
+import { setActivePlanIdForUser } from '../lib/userCourseProgress'
 
 export function CheckoutPage() {
   const { user } = useAuth()
@@ -40,7 +40,7 @@ export function CheckoutPage() {
         payerEmail: email.trim(),
         cardLast4: cardLast4.replace(/\D/g, '').slice(-4) || '0000',
       })
-      setActivePlanId(plan.id)
+      setActivePlanIdForUser(user.email, plan.id)
       setSuccess({ orderId: res.orderId })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Não foi possível concluir.')

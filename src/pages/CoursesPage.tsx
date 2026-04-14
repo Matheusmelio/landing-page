@@ -6,7 +6,7 @@ import { IMAGES } from '../constants/images'
 import type { CourseBucket, HomeCourseItem } from '../data/homeCourses'
 import { HOME_COURSES } from '../data/homeCourses'
 import { progressPercentForCourse } from '../lib/courseProgressDisplay'
-import { getCourseProgressMap, hasActivePlan } from '../lib/userCourseProgress'
+import { getCourseProgressMap, hasActivePlanForUser } from '../lib/userCourseProgress'
 
 function statusLabel(b: CourseBucket): string {
   if (b === 'em-andamento') return 'Em Andamento'
@@ -38,7 +38,7 @@ export function CoursesPage() {
   const isLoggedIn = Boolean(user)
   const [query, setQuery] = useState('')
   const [progress, setProgress] = useState(() => getCourseProgressMap())
-  const hasPlan = hasActivePlan()
+  const hasPlan = Boolean(user && hasActivePlanForUser(user.email))
 
   useEffect(() => {
     const refresh = () => setProgress(getCourseProgressMap())

@@ -171,8 +171,16 @@ export function CreatorPublishPage() {
                     <h3 className="creator-publish__card-title">{c.title}</h3>
                     <span className="creator-publish__card-price">{c.priceLabel}</span>
                   </div>
-                  <p className="creator-publish__card-meta">{c.category}</p>
+                  <p className="creator-publish__card-meta">
+                    <span className="creator-publish__badge">Publicado</span> · {c.category}
+                  </p>
                   <p className="creator-publish__card-desc">{c.description}</p>
+                  <div className="creator-publish__card-actions">
+                    <Link to={`/publicar-curso/${c.id}/editar`} className="btn btn-primary">
+                      Editar conteúdo
+                    </Link>
+                    <span className="creator-publish__card-hint">Vídeos, exercícios, atividades e currículo digital</span>
+                  </div>
                 </li>
               ))}
             </ul>

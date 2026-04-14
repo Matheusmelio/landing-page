@@ -7,7 +7,7 @@ import type { CourseBucket } from '../data/homeCourses'
 import { HOME_COURSES } from '../data/homeCourses'
 import { progressPercentForCourse } from '../lib/courseProgressDisplay'
 import { getContractTeamProgressDemo } from '../lib/enterpriseTeamProgress'
-import { countByBucket, getCourseProgressMap, hasActivePlan } from '../lib/userCourseProgress'
+import { countByBucket, getCourseProgressMap, hasActivePlanForUser } from '../lib/userCourseProgress'
 
 type TabId = 'em-andamento' | 'disponiveis' | 'concluidos'
 
@@ -38,7 +38,7 @@ export function HomePage() {
   const [activeTab, setActiveTab] = useState<TabId>('em-andamento')
   const [progress, setProgress] = useState(() => getCourseProgressMap())
 
-  const hasPlan = hasActivePlan()
+  const hasPlan = Boolean(user && hasActivePlanForUser(user.email))
 
   useEffect(() => {
     const refresh = () => setProgress(getCourseProgressMap())

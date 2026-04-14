@@ -6,7 +6,7 @@ import { HOME_COURSES } from '../data/homeCourses'
 import { getTeachingMeta } from '../data/courseTeachingMeta'
 import { getCourseOutline } from '../lib/courseModulesOutline'
 import { progressPercentForCourse } from '../lib/courseProgressDisplay'
-import { getCourseProgressMap, hasActivePlan } from '../lib/userCourseProgress'
+import { getCourseProgressMap, hasActivePlanForUser } from '../lib/userCourseProgress'
 
 export function CoursePlayerPage() {
   const { courseId = '' } = useParams()
@@ -51,7 +51,7 @@ export function CoursePlayerPage() {
   }
 
   const bucket = progressMap[course.id] ?? 'disponivel'
-  const planCoversCourse = hasActivePlan() && course.isPlatformCourse
+  const planCoversCourse = Boolean(user && hasActivePlanForUser(user.email)) && course.isPlatformCourse
   if (bucket === 'disponivel' && !planCoversCourse) {
     return <Navigate to={`/curso/${course.id}/comprar`} replace />
   }

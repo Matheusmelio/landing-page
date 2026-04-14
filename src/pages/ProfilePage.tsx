@@ -10,7 +10,7 @@ import { getTeachingMeta } from '../data/courseTeachingMeta'
 import { HOME_COURSES } from '../data/homeCourses'
 import { getPlanById } from '../data/plans'
 import { progressPercentForCourse } from '../lib/courseProgressDisplay'
-import { getActivePlanId, getCourseProgressMap } from '../lib/userCourseProgress'
+import { getActivePlanIdForUser, getCourseProgressMap } from '../lib/userCourseProgress'
 
 type EnterpriseUser = AuthUser & { role: 'enterprise' }
 
@@ -31,17 +31,24 @@ export function ProfilePage() {
 }
 
 function StudentProfile({ user }: { user: { name: string; email: string } }) {
-  const activePlan = getPlanById(getActivePlanId())
+  const [planRevision, setPlanRevision] = useState(0)
+  const activePlan = useMemo(
+    () => getPlanById(getActivePlanIdForUser(user.email)),
+    [user.email, planRevision],
+  )
   const [profileTab, setProfileTab] = useState<ProfileTab>('ativos')
   const [progress, setProgress] = useState(() => getCourseProgressMap())
 
   useEffect(() => {
     const refresh = () => setProgress(getCourseProgressMap())
+    const bumpPlan = () => setPlanRevision((n) => n + 1)
     window.addEventListener('focus', refresh)
     window.addEventListener('storage', refresh)
+    window.addEventListener('motstart-plan-change', bumpPlan)
     return () => {
       window.removeEventListener('focus', refresh)
       window.removeEventListener('storage', refresh)
+      window.removeEventListener('motstart-plan-change', bumpPlan)
     }
   }, [])
 
@@ -62,20 +69,20 @@ function StudentProfile({ user }: { user: { name: string; email: string } }) {
                 <img src={IMAGES.avatarAna} alt="" className="profile-avatar" width={120} height={120} />
                 <span className="profile-avatar__status" title="Online" />
               </div>
-              {activePlan ? (
-                <div
-                  className="profile-plan-chip profile-plan-chip--icon-only"
-                  title={activePlan.name}
-                  aria-label={`Plano ativo: ${activePlan.name}`}
-                >
-                  <span className="profile-plan-chip__symbol" aria-hidden="true">
-                    {activePlan.symbol}
-                  </span>
-                </div>
-              ) : null}
             </div>
             <div className="profile-hero__text">
-              <h1 className="profile-hero__name">{user.name}</h1>
+              <h1 className="profile-hero__name">
+                <span className="profile-hero__name-text">{user.name}</span>
+                {activePlan ? (
+                  <span
+                    className="profile-hero__plan-symbol"
+                    title={activePlan.name}
+                    aria-label={`Plano ativo: ${activePlan.name}`}
+                  >
+                    {activePlan.symbol}
+                  </span>
+                ) : null}
+              </h1>
               <p className="profile-hero__bio">
                 Estudante de Ciência da Computação apaixonada por desenvolvimento web e inteligência artificial. Sempre
                 em busca de novos conhecimentos!

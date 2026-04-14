@@ -10,6 +10,7 @@ import { EnterpriseJobsPage } from './pages/EnterpriseJobsPage'
 import { EnterpriseSupportPage } from './pages/EnterpriseSupportPage'
 import { ExercisesPage } from './pages/ExercisesPage'
 import { AboutPage } from './pages/AboutPage'
+import { CreatorCourseEditorPage } from './pages/CreatorCourseEditorPage'
 import { CreatorPublishPage } from './pages/CreatorPublishPage'
 import { HomePage } from './pages/HomePage'
 import { JobsBrowsePage } from './pages/JobsBrowsePage'
@@ -27,6 +28,7 @@ export default function App() {
       <Route element={<AppShell />}>
         <Route path="/" element={<HomePage />} />
         <Route path="/sobre" element={<AboutPage />} />
+        <Route path="/publicar-curso/:courseId/editar" element={<CreatorCourseEditorPage />} />
         <Route path="/publicar-curso" element={<CreatorPublishPage />} />
         <Route path="/cursos" element={<CoursesPage />} />
         <Route path="/curso/:courseId/comprar" element={<CoursePurchasePage />} />

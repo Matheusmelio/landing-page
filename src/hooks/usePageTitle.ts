@@ -23,6 +23,7 @@ function titleForPath(pathname: string): string | null {
   }
   if (pathname in exact) return exact[pathname]
   if (pathname.startsWith('/checkout')) return 'Checkout'
+  if (/^\/publicar-curso\/[^/]+\/editar\/?$/.test(pathname)) return 'Editar conteúdo do curso'
   if (/^\/curso\/[^/]+\/comprar\/?$/.test(pathname)) return 'Comprar curso'
   if (pathname.startsWith('/curso/')) return 'Curso'
   return null
