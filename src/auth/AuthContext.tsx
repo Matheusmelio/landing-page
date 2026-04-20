@@ -1,19 +1,11 @@
 import { createContext, useCallback, useContext, useMemo, useState, type ReactNode } from 'react'
-
-export type UserRole = 'student' | 'enterprise'
-
-/** Empresa avulsa na plataforma vs empresa em contrato B2B MotStart (regras de vitrine e talentos). */
-export type EnterprisePlan = 'standard' | 'contract'
-
-export type AuthUser = {
-  email: string
-  name: string
-  role: UserRole
-  /** Preenchido quando role === 'enterprise' */
-  companyName?: string
-  /** Só `enterprise`: `contract` = sem vitrine de vagas de terceiros; colaboradores não entram na busca pública de talentos. */
-  enterprisePlan?: EnterprisePlan
-}
+import type { AuthUser } from './types'
+import {
+  enterpriseBlocksPublicJobVitrine,
+  enterpriseCanUseTalentRecruitment,
+  enterpriseIsB2BContract,
+  normalizeEnterprisePlan,
+} from '../lib/enterprisePlan'
 
 const STORAGE_KEY = 'motstart_user_v1'
 
@@ -26,7 +18,7 @@ function normalizeStoredUser(p: AuthUser): AuthUser {
     name: p.name,
     role: 'enterprise',
     companyName: p.companyName || p.name,
-    enterprisePlan: p.enterprisePlan === 'contract' ? 'contract' : 'standard',
+    enterprisePlan: normalizeEnterprisePlan(p.enterprisePlan),
   }
 }
 
@@ -53,8 +45,9 @@ type AuthContextValue = {
   logout: () => void
   isEnterprise: boolean
   isStudent: boolean
-  /** Empresa em contrato B2B: sem vitrine de vagas de outras empresas; talentos do contrato fora da busca pública. */
   isContractEnterprise: boolean
+  canEnterpriseRecruit: boolean
+  isB2BEnterprise: boolean
 }
 
 const AuthContext = createContext<AuthContextValue | null>(null)
@@ -67,7 +60,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       ...payload,
       companyName: payload.role === 'enterprise' ? payload.companyName || payload.name : undefined,
       enterprisePlan:
-        payload.role === 'enterprise' ? (payload.enterprisePlan === 'contract' ? 'contract' : 'standard') : undefined,
+        payload.role === 'enterprise' ? normalizeEnterprisePlan(payload.enterprisePlan) : undefined,
     })
     setUser(next)
     writeUser(next)
@@ -78,21 +71,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     writeUser(null)
   }, [])
 
-  const value = useMemo(
-    () => ({
+  const value = useMemo(() => {
+    const ent = user?.role === 'enterprise' ? user.enterprisePlan : undefined
+    return {
       user,
       login,
       logout,
       isEnterprise: user?.role === 'enterprise',
       isStudent: user?.role === 'student',
-      isContractEnterprise: user?.role === 'enterprise' && user.enterprisePlan === 'contract',
-    }),
-    [user, login, logout],
-  )
+      isContractEnterprise: user?.role === 'enterprise' && enterpriseBlocksPublicJobVitrine(ent),
+      canEnterpriseRecruit: user?.role === 'enterprise' && enterpriseCanUseTalentRecruitment(ent),
+      isB2BEnterprise: user?.role === 'enterprise' && enterpriseIsB2BContract(ent),
+    }
+  }, [user, login, logout])
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
 }
 
+// eslint-disable-next-line react-refresh/only-export-components -- hook pareado com AuthProvider
 export function useAuth() {
   const ctx = useContext(AuthContext)
   if (!ctx) throw new Error('useAuth must be used within AuthProvider')

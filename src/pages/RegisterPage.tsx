@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Link, Navigate, useLocation, useNavigate, useSearchParams } from 'react-router-dom'
-import type { EnterprisePlan, UserRole } from '../auth/AuthContext'
+import type { UserRole } from '../auth/types'
+import type { EnterprisePlan } from '../lib/enterprisePlan'
 import { useAuth } from '../auth/AuthContext'
 import { Logo } from '../components/Logo'
 import { postAuthRedirect } from '../lib/authRedirect'
@@ -17,7 +18,9 @@ export function RegisterPage() {
   const [companyName, setCompanyName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
-  const [enterprisePlan, setEnterprisePlan] = useState<EnterprisePlan>('standard')
+  const [enterprisePlan, setEnterprisePlan] = useState<EnterprisePlan>(() =>
+    params.get('plano') === 'avulsa' ? 'standard' : 'contract_employee'
+  )
 
   const redirectAfterAuth = postAuthRedirect(location.state, params.get('redirect'))
 
@@ -51,7 +54,8 @@ export function RegisterPage() {
         <div className="auth-card auth-card--wide">
           <h1 className="auth-title">Criar conta</h1>
           <p className="auth-lead">
-            Estudantes compram cursos ou escolhem um plano. Empresas encontram talentos e publicam vagas.
+            Estudantes compram cursos ou escolhem um plano. Empresas com contrato MotStart escolhem perfil de colaborador
+            ou gestor; empresas avulsas usam a terceira opção.
           </p>
 
           <div className="account-type" role="tablist" aria-label="Tipo de cadastro">
@@ -116,8 +120,36 @@ export function RegisterPage() {
             </label>
             {role === 'enterprise' ? (
               <fieldset className="auth-enterprise-choice">
-                <legend>Tipo de acesso empresarial</legend>
+                <legend>Perfil no contrato MotStart (empresa parceira)</legend>
                 <div className="auth-enterprise-choice__options">
+                  <label>
+                    <input
+                      type="radio"
+                      name="reg-enterprise-plan"
+                      checked={enterprisePlan === 'contract_employee'}
+                      onChange={() => setEnterprisePlan('contract_employee')}
+                    />
+                    <span>
+                      <strong>Colaborador (funcionário)</strong>{' '}
+                      <span className="auth-enterprise-choice__hint">
+                        (vinculado à empresa com contrato MotStart — sem acesso à vitrine de vagas e sem banco de talentos)
+                      </span>
+                    </span>
+                  </label>
+                  <label>
+                    <input
+                      type="radio"
+                      name="reg-enterprise-plan"
+                      checked={enterprisePlan === 'contract_manager'}
+                      onChange={() => setEnterprisePlan('contract_manager')}
+                    />
+                    <span>
+                      <strong>Gestor</strong>{' '}
+                      <span className="auth-enterprise-choice__hint">
+                        (acesso à vitrine de vagas, busca de talentos e publicação de vagas)
+                      </span>
+                    </span>
+                  </label>
                   <label>
                     <input
                       type="radio"
@@ -128,21 +160,7 @@ export function RegisterPage() {
                     <span>
                       Conta empresarial na plataforma{' '}
                       <span className="auth-enterprise-choice__hint">
-                        (talentos e vagas — sem contrato B2B específico)
-                      </span>
-                    </span>
-                  </label>
-                  <label>
-                    <input
-                      type="radio"
-                      name="reg-enterprise-plan"
-                      checked={enterprisePlan === 'contract'}
-                      onChange={() => setEnterprisePlan('contract')}
-                    />
-                    <span>
-                      Empresa com <strong>contrato MotStart (B2B)</strong>{' '}
-                      <span className="auth-enterprise-choice__hint">
-                        (regras do acordo corporativo para vitrine e talentos)
+                        (sem contrato B2B específico — talentos e vagas como empresa avulsa)
                       </span>
                     </span>
                   </label>
@@ -155,8 +173,9 @@ export function RegisterPage() {
           </form>
 
           <p className="auth-foot">
-            Ao cadastrar, você concorda com os termos da plataforma (demonstração).{' '}
-            <Link to="/login">Entrar</Link>
+            Conta empresarial <strong>sem</strong> contrato B2B: use a terceira opção ou abra o cadastro com{' '}
+            <Link to="/cadastro?tipo=empresa&plano=avulsa">?plano=avulsa</Link>. Ao cadastrar, você concorda com os termos
+            (demonstração). <Link to="/login">Entrar</Link>
           </p>
         </div>
       </main>

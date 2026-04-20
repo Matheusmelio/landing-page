@@ -1,4 +1,6 @@
 import { useEffect, useState } from 'react'
+import { Navigate } from 'react-router-dom'
+import { useAuth } from '../auth/AuthContext'
 import { SecondaryHeader } from '../components/SecondaryHeader'
 
 const JOBS_KEY = 'motstart_jobs_v1'
@@ -26,6 +28,7 @@ function saveJobs(jobs: PublishedJob[]) {
 }
 
 export function EnterpriseJobsPage() {
+  const { canEnterpriseRecruit } = useAuth()
   const [jobs, setJobs] = useState<PublishedJob[]>(() => loadJobs())
   const [title, setTitle] = useState('')
   const [stack, setStack] = useState('')
@@ -34,6 +37,10 @@ export function EnterpriseJobsPage() {
   useEffect(() => {
     saveJobs(jobs)
   }, [jobs])
+
+  if (!canEnterpriseRecruit) {
+    return <Navigate to="/perfil" replace />
+  }
 
   const publish = (e: React.FormEvent) => {
     e.preventDefault()

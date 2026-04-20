@@ -128,7 +128,35 @@ function TalentsSearchContent() {
 }
 
 export function TalentsPage() {
-  const { user, isEnterprise } = useAuth()
+  const { user, isEnterprise, canEnterpriseRecruit } = useAuth()
+
+  if (user && isEnterprise && !canEnterpriseRecruit) {
+    return (
+      <div className="page">
+        <MainHeader />
+        <section className="talents-gate">
+          <div className="container section-wrap">
+            <div className="talents-gate__card">
+              <h1 className="talents-gate__title">Banco de talentos indisponível para este perfil</h1>
+              <p className="talents-gate__text">
+                Contas de <strong>colaborador</strong> (empresa com contrato MotStart) não acessam a busca pública de
+                talentos. Peça ao <strong>gestor</strong> da sua empresa o acesso ou utilize o perfil adequado ao entrar
+                na plataforma.
+              </p>
+              <div className="talents-gate__actions">
+                <Link to="/perfil" className="btn btn-primary">
+                  Ir ao perfil
+                </Link>
+                <Link to="/login?tipo=empresa" className="btn btn-ghost">
+                  Entrar com outro perfil
+                </Link>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    )
+  }
 
   if (!user || !isEnterprise) {
     return (

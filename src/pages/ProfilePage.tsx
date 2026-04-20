@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
-import type { AuthUser } from '../auth/AuthContext'
+import type { AuthUser } from '../auth/types'
+import { enterpriseCanUseTalentRecruitment, enterpriseIsB2BContract } from '../lib/enterprisePlan'
 import { useAuth } from '../auth/AuthContext'
 import { SecondaryHeader } from '../components/SecondaryHeader'
 import { IMAGES } from '../constants/images'
@@ -330,7 +331,18 @@ function StudentProfile({ user }: { user: { name: string; email: string } }) {
 
 function EnterpriseProfile({ user }: { user: EnterpriseUser }) {
   const company = user.companyName || 'Sua empresa'
-  const isContract = user.enterprisePlan === 'contract'
+  const plan = user.enterprisePlan
+  const canRecruit = enterpriseCanUseTalentRecruitment(plan)
+  const isB2B = enterpriseIsB2BContract(plan)
+
+  const badgeLabel =
+    plan === 'contract_employee'
+      ? 'Colaborador · contrato MotStart'
+      : plan === 'contract_manager'
+        ? 'Gestor · contrato MotStart'
+        : plan === 'contract'
+          ? 'Contrato B2B (legado)'
+          : 'Conta empresarial'
 
   return (
     <div className="page page--profile">
@@ -343,32 +355,45 @@ function EnterpriseProfile({ user }: { user: EnterpriseUser }) {
               {company.slice(0, 2).toUpperCase()}
             </div>
             <div className="profile-hero__text">
-              <p className="profile-hero__badge">{isContract ? 'Contrato B2B MotStart' : 'Conta empresarial'}</p>
+              <p className="profile-hero__badge">{badgeLabel}</p>
               <h1 className="profile-hero__name">{company}</h1>
               <p className="profile-hero__bio">
                 Responsável: {user.name} · {user.email}.{' '}
-                {isContract ? (
+                {plan === 'contract_employee' ? (
                   <>
-                    Conta em contrato corporativo: <strong>sem acesso à vitrine de vagas de outras empresas</strong>.
-                    Colaboradores vinculados ao programa não são exibidos na busca pública de talentos. Use a assistência
-                    para capacitação e escopo do acordo.
+                    Perfil de <strong>colaborador</strong>: sem acesso à vitrine de vagas de terceiros, sem busca de
+                    talentos e sem publicação de vagas. Use cursos e trilhas conforme o programa da sua empresa.
+                  </>
+                ) : plan === 'contract_manager' ? (
+                  <>
+                    Perfil de <strong>gestor</strong>: acesso à vitrine de vagas, busca de talentos e publicação de vagas,
+                    conforme o contrato MotStart.
+                  </>
+                ) : plan === 'contract' ? (
+                  <>
+                    Conta em contrato corporativo (legado): <strong>sem vitrine de vagas de outras empresas</strong>;
+                    busca de talentos conforme regras do acordo.
                   </>
                 ) : (
                   <>
-                    Acesse busca de talentos, publique vagas para candidatos da plataforma e solicite contratos para
-                    capacitação da equipe.
+                    Conta empresarial avulsa: busca de talentos, publicação de vagas e assessoria para capacitação da
+                    equipe.
                   </>
                 )}
               </p>
             </div>
           </div>
           <div className="profile-hero__actions">
-            <Link to="/talentos" className="btn btn-glass">
-              Buscar talentos
-            </Link>
-            <Link to="/empresa/vagas" className="btn btn-glass">
-              Publicar vagas
-            </Link>
+            {canRecruit ? (
+              <>
+                <Link to="/talentos" className="btn btn-glass">
+                  Buscar talentos
+                </Link>
+                <Link to="/empresa/vagas" className="btn btn-glass">
+                  Publicar vagas
+                </Link>
+              </>
+            ) : null}
             <Link to="/empresa/assessoria" className="btn btn-glass">
               Contrato / equipe
             </Link>
@@ -385,8 +410,8 @@ function EnterpriseProfile({ user }: { user: EnterpriseUser }) {
             <span className="profile-stat__value">—</span>
           </div>
           <div className="profile-stat">
-            <span className="profile-stat__label">Contrato</span>
-            <span className="profile-stat__value">{isContract ? 'Ativo (B2B)' : 'Sob análise'}</span>
+            <span className="profile-stat__label">Perfil</span>
+            <span className="profile-stat__value">{isB2B ? 'Contrato MotStart' : 'Avulso'}</span>
           </div>
           <div className="profile-stat">
             <span className="profile-stat__label">Suporte</span>
@@ -415,10 +440,15 @@ function EnterpriseProfile({ user }: { user: EnterpriseUser }) {
           <section className="info-card">
             <h2 className="info-card__title">Estudantes & vagas</h2>
             <p className="info-card__para">
-              {isContract ? (
+              {plan === 'contract_employee' ? (
                 <>
-                  No contrato B2B, a vitrine pública de vagas de terceiros fica desativada. Divulgação de oportunidades
-                  segue as regras do seu acordo com a MotStart.
+                  Colaboradores não acessam a vitrine pública de vagas nem o banco de talentos. Gestores da empresa
+                  utilizam o perfil adequado para recrutamento.
+                </>
+              ) : plan === 'contract' || plan === 'contract_manager' ? (
+                <>
+                  Conforme o contrato, a vitrine de vagas de terceiros pode estar limitada; divulgação de oportunidades
+                  segue as regras do acordo.
                 </>
               ) : (
                 <>
@@ -434,12 +464,18 @@ function EnterpriseProfile({ user }: { user: EnterpriseUser }) {
           <section className="info-card">
             <h2 className="info-card__title">Próximos passos</h2>
             <ul className="enterprise-checklist">
-              <li>
-                <Link to="/talentos">Explorar talentos</Link> na base MotStart.
-              </li>
-              <li>
-                <Link to="/empresa/vagas">Cadastrar uma vaga</Link> com stack e modalidade.
-              </li>
+              {canRecruit ? (
+                <>
+                  <li>
+                    <Link to="/talentos">Explorar talentos</Link> na base MotStart.
+                  </li>
+                  <li>
+                    <Link to="/empresa/vagas">Cadastrar uma vaga</Link> com stack e modalidade.
+                  </li>
+                </>
+              ) : (
+                <li>Recrutamento e vagas ficam com o gestor da empresa neste contrato.</li>
+              )}
               <li>
                 <Link to="/empresa/assessoria">Falar com a assistência</Link> para contrato de capacitação em equipe.
               </li>

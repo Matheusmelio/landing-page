@@ -27,8 +27,9 @@ export function JobsBrowsePage() {
           <div className="contract-block">
             <h1 className="page-title">Vitrine de vagas indisponível</h1>
             <p className="page-lead contract-block__text">
-              Contas empresariais em <strong>contrato B2B MotStart</strong> não acessam a vitrine pública de vagas de
-              outras empresas. O acordo prevê escopo próprio de capacitação e regras de visibilidade distintas.
+              Perfis de <strong>colaborador</strong> (contrato MotStart) e contas em{' '}
+              <strong>contrato corporativo legado</strong> não acessam a vitrine pública de vagas de outras empresas.
+              Gestores com contrato MotStart utilizam o acesso completo conforme o perfil escolhido no login.
             </p>
             <p className="contract-block__text">
               Para oportunidades internas da sua organização, use a área de publicação autorizada no perfil ou fale com a

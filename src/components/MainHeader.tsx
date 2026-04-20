@@ -5,7 +5,7 @@ import { Logo } from './Logo'
 
 export function MainHeader() {
   const [open, setOpen] = useState(false)
-  const { user, logout, isEnterprise, isStudent, isContractEnterprise } = useAuth()
+  const { user, logout, isEnterprise, isStudent, isContractEnterprise, canEnterpriseRecruit } = useAuth()
   const showPublicJobsNav = !isContractEnterprise
 
   const close = () => setOpen(false)
@@ -80,12 +80,12 @@ export function MainHeader() {
               Vagas
             </NavLink>
           ) : null}
-          {isEnterprise ? (
+          {isEnterprise && canEnterpriseRecruit ? (
             <NavLink to="/talentos" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
               Talentos
             </NavLink>
           ) : null}
-          {isEnterprise ? (
+          {isEnterprise && canEnterpriseRecruit ? (
             <NavLink to="/empresa/vagas" className={({ isActive }) => (isActive ? 'nav-link active' : 'nav-link')}>
               Publicar vaga
             </NavLink>
@@ -154,12 +154,12 @@ export function MainHeader() {
                 Vagas
               </NavLink>
             ) : null}
-            {isEnterprise ? (
+            {isEnterprise && canEnterpriseRecruit ? (
               <NavLink to="/talentos" className="drawer-link" onClick={close}>
                 Talentos
               </NavLink>
             ) : null}
-            {isEnterprise ? (
+            {isEnterprise && canEnterpriseRecruit ? (
               <NavLink to="/empresa/vagas" className="drawer-link" onClick={close}>
                 Publicar vaga
               </NavLink>

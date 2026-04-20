@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useAuth } from '../auth/AuthContext'
 import { MainHeader } from '../components/MainHeader'
+import { LandingGuestHero } from '../components/LandingGuestHero'
+import { ScrollReveal } from '../components/ScrollReveal'
 import { IMAGES } from '../constants/images'
 import type { CourseBucket } from '../data/homeCourses'
 import { HOME_COURSES } from '../data/homeCourses'
@@ -33,7 +35,7 @@ const LANDING_TUTORS = [
 ]
 
 export function HomePage() {
-  const { user, isContractEnterprise } = useAuth()
+  const { user, isB2BEnterprise } = useAuth()
   const isLoggedIn = !!user
   const [activeTab, setActiveTab] = useState<TabId>('em-andamento')
   const [progress, setProgress] = useState(() => getCourseProgressMap())
@@ -62,9 +64,9 @@ export function HomePage() {
     catalogTotal > 0 ? Math.round((counts.concluidos / catalogTotal) * 100) : 0
 
   const contractTeamMembers = useMemo(() => {
-    if (!user || user.role !== 'enterprise' || !isContractEnterprise) return null
+    if (!user || user.role !== 'enterprise' || !isB2BEnterprise) return null
     return getContractTeamProgressDemo(user.companyName || user.email)
-  }, [user, isContractEnterprise])
+  }, [user, isB2BEnterprise])
 
   return (
     <div className="page">
@@ -72,69 +74,11 @@ export function HomePage() {
 
       {!isLoggedIn ? (
         <>
-          <section className="home-landing-hero" aria-labelledby="landing-hero-heading">
-            <div className="container home-landing-hero__inner">
-              <div className="home-landing-hero__copy">
-                <h1 id="landing-hero-heading" className="home-landing-hero__title">
-                  Aprimore suas{' '}
-                  <span className="home-landing-hero__accent">habilidades</span> para progredir em sua{' '}
-                  <span className="home-landing-hero__accent">carreira</span>
-                </h1>
-                <p className="home-landing-hero__lead">
-                  Programação, desenvolvimento web, dados e design — trilhas completas, comunidade e suporte. Use{' '}
-                  <strong>Entrar</strong> ou <strong>Cadastrar</strong> no menu no topo da página para acessar sua conta.
-                </p>
-                <ul className="home-landing-hero__features">
-                  <li>
-                    <span className="home-landing-hero__feature-icon" aria-hidden="true">
-                      💬
-                    </span>
-                    Comunidade
-                  </li>
-                  <li>
-                    <span className="home-landing-hero__feature-icon" aria-hidden="true">
-                      💼
-                    </span>
-                    Carreira orientada
-                  </li>
-                  <li>
-                    <span className="home-landing-hero__feature-icon" aria-hidden="true">
-                      ✨
-                    </span>
-                    Projetos práticos
-                  </li>
-                </ul>
-              </div>
-              <div className="home-landing-hero__aside" aria-hidden="true">
-                <div className="home-landing-bubble home-landing-bubble--1">
-                  <strong>2K+</strong>
-                  <span>aulas em vídeo</span>
-                </div>
-                <div className="home-landing-bubble home-landing-bubble--2">
-                  <strong>{catalogTotal}+</strong>
-                  <span>cursos no catálogo</span>
-                </div>
-                <div className="home-landing-bubble home-landing-bubble--3">
-                  <strong>250+</strong>
-                  <span>horas de conteúdo</span>
-                </div>
-                <div className="home-landing-hero__orb-wrap">
-                  <div className="home-landing-hero__orb" />
-                  <img
-                    src={IMAGES.heroStudent}
-                    alt=""
-                    className="home-landing-hero__student"
-                    width={300}
-                    height={300}
-                    loading="eager"
-                    decoding="async"
-                  />
-                </div>
-              </div>
-            </div>
-          </section>
+          <ScrollReveal as="section" className="home-landing-hero" aria-labelledby="landing-hero-heading">
+            <LandingGuestHero catalogTotal={catalogTotal} />
+          </ScrollReveal>
 
-          <section className="home-landing-partners" aria-label="Parceiros">
+          <ScrollReveal as="section" className="home-landing-partners" aria-label="Parceiros">
             <div className="container home-landing-partners__inner">
               <span className="home-landing-partners__label">Confiança de quem aprende com a gente</span>
               <div className="home-landing-partners__logos">
@@ -144,15 +88,23 @@ export function HomePage() {
                 <span>UXLab</span>
               </div>
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="home-landing-services" id="servicos" aria-labelledby="services-heading">
+          <ScrollReveal
+            as="section"
+            staggerOnly
+            className="home-landing-services"
+            id="servicos"
+            aria-labelledby="services-heading"
+          >
             <div className="container">
-              <p className="home-landing-kicker">Nossos serviços</p>
-              <h2 id="services-heading" className="home-landing-section-title">
-                Um ambiente de aprendizado envolvente e profissional
-              </h2>
-              <div className="home-landing-services__grid">
+              <div className="home-landing-section-head scroll-reveal-fade-block">
+                <p className="home-landing-kicker">Nossos serviços</p>
+                <h2 id="services-heading" className="home-landing-section-title">
+                  Um ambiente de aprendizado envolvente e profissional
+                </h2>
+              </div>
+              <div className="home-landing-services__grid scroll-reveal-stagger">
                 <article className="home-landing-service home-landing-service--featured">
                   <div className="home-landing-service__icon" aria-hidden="true">
                     <svg width="28" height="28" viewBox="0 0 24 24" fill="none">
@@ -199,18 +151,20 @@ export function HomePage() {
                 </article>
               </div>
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="home-landing-popular" aria-labelledby="popular-heading">
+          <ScrollReveal as="section" staggerOnly className="home-landing-popular" aria-labelledby="popular-heading">
             <div className="container">
-              <p className="home-landing-kicker">Explore programas</p>
-              <h2 id="popular-heading" className="home-landing-section-title">
-                Nossas aulas mais populares
-              </h2>
-              <p className="home-landing-popular__intro">
-                Uma seleção do catálogo — valores avulsos ou inclusos no seu plano após assinar.
-              </p>
-              <div className="home-course-grid home-landing-popular__grid">
+              <div className="home-landing-section-head scroll-reveal-fade-block">
+                <p className="home-landing-kicker">Explore programas</p>
+                <h2 id="popular-heading" className="home-landing-section-title">
+                  Nossas aulas mais populares
+                </h2>
+                <p className="home-landing-popular__intro">
+                  Uma seleção do catálogo — valores avulsos ou inclusos no seu plano após assinar.
+                </p>
+              </div>
+              <div className="home-course-grid home-landing-popular__grid scroll-reveal-stagger">
                 {GUEST_POPULAR.map((c) => {
                   const showPlatformSeal = hasPlan && c.isPlatformCourse
                   return (
@@ -246,18 +200,26 @@ export function HomePage() {
                 </Link>
               </p>
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="home-landing-tutors" aria-labelledby="tutors-heading">
+          <ScrollReveal
+            as="section"
+            staggerOnly
+            className="home-landing-tutors"
+            id="instrutores"
+            aria-labelledby="tutors-heading"
+          >
             <div className="container">
-              <p className="home-landing-kicker">Instrutores</p>
-              <h2 id="tutors-heading" className="home-landing-section-title">
-                Quem ensina na MotStart
-              </h2>
-              <p className="home-landing-tutors__intro">
-                Profissionais atuantes em produto, dados e engenharia — didática clara e foco em resultado.
-              </p>
-              <div className="home-landing-tutors__grid">
+              <div className="home-landing-section-head scroll-reveal-fade-block">
+                <p className="home-landing-kicker">Instrutores</p>
+                <h2 id="tutors-heading" className="home-landing-section-title">
+                  Quem ensina na MotStart
+                </h2>
+                <p className="home-landing-tutors__intro">
+                  Profissionais atuantes em produto, dados e engenharia — didática clara e foco em resultado.
+                </p>
+              </div>
+              <div className="home-landing-tutors__grid scroll-reveal-stagger">
                 {LANDING_TUTORS.map((t) => (
                   <article key={t.name} className="home-landing-tutor">
                     <div className="home-landing-tutor__avatar" aria-hidden="true">
@@ -270,9 +232,9 @@ export function HomePage() {
                 ))}
               </div>
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="home-landing-quote" aria-labelledby="quote-heading">
+          <ScrollReveal as="section" className="home-landing-quote" aria-labelledby="quote-heading">
             <div className="container home-landing-quote__inner">
               <h2 id="quote-heading" className="sr-only">
                 Depoimento
@@ -286,9 +248,9 @@ export function HomePage() {
                 <span className="home-landing-quote__meta">Aluna, trilha Web Full Stack</span>
               </div>
             </div>
-          </section>
+          </ScrollReveal>
 
-          <section className="home-landing-about-cta" aria-labelledby="about-cta-heading">
+          <ScrollReveal as="section" className="home-landing-about-cta" aria-labelledby="about-cta-heading">
             <div className="container home-landing-about-cta__inner">
               <h2 id="about-cta-heading" className="home-landing-about-cta__title">
                 Conheça a MotStart
@@ -300,7 +262,7 @@ export function HomePage() {
                 Ir para Sobre
               </Link>
             </div>
-          </section>
+          </ScrollReveal>
         </>
       ) : (
         <>
