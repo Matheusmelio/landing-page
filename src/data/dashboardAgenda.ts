@@ -1,9 +1,15 @@
+export type AgendaItemType = 'live' | 'prazo' | 'mentoria'
+
 export type AgendaItem = {
   id: string
   title: string
   dateLabel: string
   timeRange: string
-  type: 'live' | 'prazo' | 'mentoria'
+  type: AgendaItemType
+  /** Data ISO (YYYY-MM-DD) para ordenação e itens adicionados pelo usuário */
+  eventDate?: string
+  /** Criado pelo usuário no perfil (pode ser removido) */
+  userAdded?: boolean
 }
 
 /** Eventos de demonstração na aba Agenda do painel. */

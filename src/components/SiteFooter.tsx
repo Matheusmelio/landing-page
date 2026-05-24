@@ -1,4 +1,7 @@
-import { Link } from 'react-router-dom'
+'use client'
+
+import { loginHref } from '@/lib/authUrls'
+import Link from 'next/link'
 import { useAuth } from '../auth/AuthContext'
 
 export function SiteFooter() {
@@ -17,28 +20,28 @@ export function SiteFooter() {
           <div className="site-footer__col">
             <span className="site-footer__heading">Aprender</span>
             {user ? (
-              <Link to="/cursos">Cursos</Link>
+              <Link href="/cursos">Cursos</Link>
             ) : (
-              <Link to="/login" state={{ from: '/cursos' }}>
+              <Link href={loginHref('/cursos')}>
                 Cursos
               </Link>
             )}
-            {!isEnterprise ? <Link to="/planos">Planos</Link> : null}
-            <Link to="/sobre">Sobre</Link>
-            <Link to="/publicar-curso">Publicar curso</Link>
-            <Link to="/exercicios-ia">Exercícios IA</Link>
+            {!isEnterprise ? <Link href="/planos">Planos</Link> : null}
+            <Link href="/sobre">Sobre</Link>
+            <Link href="/publicar-curso">Publicar curso</Link>
+            <Link href="/exercicios-ia">Exercícios IA</Link>
           </div>
           <div className="site-footer__col">
             <span className="site-footer__heading">Conta</span>
-            <Link to="/login">Entrar</Link>
-            <Link to="/cadastro">Cadastrar</Link>
-            <Link to="/perfil">Perfil</Link>
+            <Link href="/login">Entrar</Link>
+            <Link href="/cadastro">Cadastrar</Link>
+            <Link href="/perfil">Perfil</Link>
           </div>
           <div className="site-footer__col">
             <span className="site-footer__heading">Empresas</span>
-            <Link to="/cadastro?tipo=empresa">Conta empresarial</Link>
-            <Link to="/empresa/assessoria">Assessoria</Link>
-            <Link to="/vagas">Vagas</Link>
+            <Link href="/cadastro?tipo=empresa">Conta empresarial</Link>
+            <Link href="/empresa/assessoria">Assessoria</Link>
+            <Link href="/vagas">Vagas</Link>
           </div>
         </nav>
       </div>
@@ -46,7 +49,7 @@ export function SiteFooter() {
       <div className="site-footer__bottom">
         <div className="container site-footer__bottom-inner">
           <p className="site-footer__copy">© {year} MotStart. Demonstração — conteúdo ilustrativo.</p>
-          <Link to="/termos" className="site-footer__legal">
+          <Link href="/termos" className="site-footer__legal">
             Termos e privacidade
           </Link>
         </div>

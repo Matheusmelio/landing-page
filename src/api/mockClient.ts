@@ -1,4 +1,5 @@
 import type { PlanId } from '../data/plans'
+import { apiFetch, isApiEnabled } from '../lib/api/http'
 
 export type CoursePurchasePayload = {
   courseId: string
@@ -7,19 +8,12 @@ export type CoursePurchasePayload = {
   cardLast4: string
 }
 
-/**
- * Camada de API simulada. Em produção, troque por `fetch` para o backend
- * (ex.: `import.meta.env.VITE_API_URL`).
- */
-
-const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
-
 export type CheckoutPayload = {
   planId: PlanId
   payerName: string
   payerEmail: string
-  /** Últimos 4 dígitos apenas em demo — nunca envie PAN real para o front em produção sem PCI */
   cardLast4: string
+  userEmail?: string
 }
 
 export type CheckoutResult = {
@@ -28,8 +22,9 @@ export type CheckoutResult = {
   message: string
 }
 
-/** Simula compra avulsa de um curso */
-export async function processCoursePurchaseMock(payload: CoursePurchasePayload): Promise<CheckoutResult> {
+const delay = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+async function processCoursePurchaseMockLocal(payload: CoursePurchasePayload): Promise<CheckoutResult> {
   await delay(900)
   if (!payload.payerEmail?.includes('@')) {
     throw new Error('E-mail inválido')
@@ -42,8 +37,7 @@ export async function processCoursePurchaseMock(payload: CoursePurchasePayload):
   }
 }
 
-/** Simula gateway de pagamento e confirmação de assinatura */
-export async function processCheckoutMock(payload: CheckoutPayload): Promise<CheckoutResult> {
+async function processCheckoutMockLocal(payload: CheckoutPayload): Promise<CheckoutResult> {
   await delay(900)
   if (!payload.payerEmail?.includes('@')) {
     throw new Error('E-mail inválido')
@@ -54,4 +48,28 @@ export async function processCheckoutMock(payload: CheckoutPayload): Promise<Che
     orderId,
     message: `Assinatura ${payload.planId} registrada (ambiente de demonstração).`,
   }
+}
+
+/** Compra avulsa de curso — usa API Express + Supabase se `NEXT_PUBLIC_API_URL` estiver definida. */
+export async function processCoursePurchaseMock(payload: CoursePurchasePayload): Promise<CheckoutResult> {
+  if (!isApiEnabled()) {
+    return processCoursePurchaseMockLocal(payload)
+  }
+
+  return apiFetch<CheckoutResult>('/api/course-purchases', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
+}
+
+/** Assinatura de plano — usa API Express + Supabase se `NEXT_PUBLIC_API_URL` estiver definida. */
+export async function processCheckoutMock(payload: CheckoutPayload): Promise<CheckoutResult> {
+  if (!isApiEnabled()) {
+    return processCheckoutMockLocal(payload)
+  }
+
+  return apiFetch<CheckoutResult>('/api/checkout', {
+    method: 'POST',
+    body: JSON.stringify(payload),
+  })
 }

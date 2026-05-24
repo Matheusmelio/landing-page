@@ -1,16 +1,19 @@
 import { HOME_COURSES } from '../data/homeCourses'
 import type { CourseBucket } from '../data/homeCourses'
+import { fetchProgressFromApi, saveProgressToApi, updateCourseBucketOnApi } from './api/progress'
+import { apiFetch, isApiEnabled } from './api/http'
 
 const KEY = 'motstart_course_progress_v1'
 
-/** Plano ativo guardado por e-mail do utilizador (só após checkout demo). */
+function storage(): Storage | null {
+  if (typeof window === 'undefined') return null
+  return localStorage
+}
+
 function userPlanStorageKey(email: string) {
   return `motstart_active_plan_user_v1:${email.toLowerCase().trim()}`
 }
 
-/**
- * Demonstração: 12 em andamento (4 linhas × 3 no grid), 4 disponíveis, 2 concluídos.
- */
 const DEFAULT_PROGRESS: Record<string, CourseBucket> = {
   c1: 'em-andamento',
   c2: 'em-andamento',
@@ -33,8 +36,10 @@ const DEFAULT_PROGRESS: Record<string, CourseBucket> = {
 }
 
 function readRaw(): Record<string, CourseBucket> | null {
+  const ls = storage()
+  if (!ls) return null
   try {
-    const raw = localStorage.getItem(KEY)
+    const raw = ls.getItem(KEY)
     if (!raw) return null
     return JSON.parse(raw) as Record<string, CourseBucket>
   } catch {
@@ -46,7 +51,6 @@ function isBucket(v: unknown): v is CourseBucket {
   return v === 'em-andamento' || v === 'disponivel' || v === 'concluido'
 }
 
-/** Mescla progresso salvo com o catálogo atual (novos cursos entram como disponíveis). */
 function mergeProgress(existing: Record<string, CourseBucket> | null): Record<string, CourseBucket> {
   const merged: Record<string, CourseBucket> = { ...DEFAULT_PROGRESS }
   if (existing) {
@@ -60,9 +64,33 @@ function mergeProgress(existing: Record<string, CourseBucket> | null): Record<st
   return merged
 }
 
+function writeProgressMap(map: Record<string, CourseBucket>) {
+  const ls = storage()
+  if (!ls) return
+  ls.setItem(KEY, JSON.stringify(map))
+  window.dispatchEvent(new Event('motstart-progress-change'))
+}
+
 function persistIfChanged(prev: Record<string, CourseBucket> | null, next: Record<string, CourseBucket>) {
+  const ls = storage()
+  if (!ls) return
   if (!prev || JSON.stringify(prev) !== JSON.stringify(next)) {
-    localStorage.setItem(KEY, JSON.stringify(next))
+    writeProgressMap(next)
+  }
+}
+
+/** Carrega progresso do Supabase para o cache local (quando API ativa). */
+export async function hydrateProgressFromApi(email: string): Promise<void> {
+  if (!email || !isApiEnabled()) return
+  try {
+    const remote = await fetchProgressFromApi(email)
+    const hasRemote = Object.keys(remote).length > 0
+    const merged = mergeProgress(hasRemote ? remote : readRaw())
+    writeProgressMap(merged)
+    if (hasRemote) return
+    await saveProgressToApi(email, merged)
+  } catch (err) {
+    console.warn('[motstart] hydrateProgressFromApi', err)
   }
 }
 
@@ -73,31 +101,54 @@ export function getCourseProgressMap(): Record<string, CourseBucket> {
   return merged
 }
 
-/** Atualiza o status de um curso no armazenamento local (demo). */
-export function setCourseBucket(courseId: string, bucket: CourseBucket) {
+export function setCourseBucket(courseId: string, bucket: CourseBucket, userEmail?: string) {
   const map = { ...getCourseProgressMap(), [courseId]: bucket }
-  localStorage.setItem(KEY, JSON.stringify(map))
+  writeProgressMap(map)
+
+  if (userEmail && isApiEnabled()) {
+    void updateCourseBucketOnApi(userEmail, courseId, bucket).catch((err) =>
+      console.warn('[motstart] setCourseBucket API', err),
+    )
+  }
 }
 
-/** Define o plano ativo para este e-mail (checkout demo). */
+async function syncActivePlanToApi(email: string, planId: string | null) {
+  if (!isApiEnabled()) return
+  await apiFetch('/api/profiles', {
+    method: 'PUT',
+    body: JSON.stringify({
+      email,
+      activePlanId: planId,
+    }),
+  })
+}
+
 export function setActivePlanIdForUser(email: string, planId: string | null) {
+  const ls = storage()
+  if (!ls) return
   const k = userPlanStorageKey(email)
-  if (!planId) localStorage.removeItem(k)
-  else localStorage.setItem(k, planId)
+  if (!planId) ls.removeItem(k)
+  else ls.setItem(k, planId)
   window.dispatchEvent(new Event('motstart-plan-change'))
+
+  if (isApiEnabled()) {
+    void syncActivePlanToApi(email, planId).catch((err) =>
+      console.warn('[motstart] syncActivePlanToApi', err),
+    )
+  }
 }
 
-/** Plano ativo só existe se este utilizador concluiu a compra (demo). */
 export function getActivePlanIdForUser(email: string | null | undefined): string | null {
   if (!email) return null
-  return localStorage.getItem(userPlanStorageKey(email))
+  const ls = storage()
+  if (!ls) return null
+  return ls.getItem(userPlanStorageKey(email))
 }
 
 export function hasActivePlanForUser(email: string | null | undefined): boolean {
   return !!getActivePlanIdForUser(email)
 }
 
-/** Conta cursos por aba (para badges) */
 export function countByBucket(progress: Record<string, CourseBucket>) {
   let emAndamento = 0
   let disponiveis = 0

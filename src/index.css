@@ -70,6 +70,19 @@ button {
   cursor: pointer;
 }
 
+input:not([type='checkbox']):not([type='radio']),
+select,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+input:not([type='checkbox']):not([type='radio']):not(.search-field__input),
+select,
+textarea {
+  background: #fff;
+}
+
 img {
   max-width: 100%;
   height: auto;

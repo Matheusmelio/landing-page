@@ -1,0 +1,47 @@
+{
+  "validatedAt": "2026-05-19T02:21:16.480Z",
+  "base": "http://localhost:3001",
+  "results": [
+    {
+      "name": "home",
+      "url": "/",
+      "status": 200,
+      "finalUrl": "http://localhost:3001/",
+      "file": "C:\\Users\\Matheus Oliveira\\squad 4\\motstart\\validation-screenshots\\home.png"
+    },
+    {
+      "name": "perfil-estudante",
+      "url": "/perfil",
+      "status": 200,
+      "finalUrl": "http://localhost:3001/perfil",
+      "file": "C:\\Users\\Matheus Oliveira\\squad 4\\motstart\\validation-screenshots\\perfil-estudante.png"
+    },
+    {
+      "name": "perfil-agenda",
+      "url": "/perfil#agenda",
+      "file": "C:\\Users\\Matheus Oliveira\\squad 4\\motstart\\validation-screenshots\\perfil-agenda.png"
+    },
+    {
+      "name": "exercicios-ia",
+      "url": "/exercicios-ia",
+      "status": 200,
+      "finalUrl": "http://localhost:3001/exercicios-ia",
+      "file": "C:\\Users\\Matheus Oliveira\\squad 4\\motstart\\validation-screenshots\\exercicios-ia.png"
+    },
+    {
+      "name": "vagas",
+      "url": "/vagas",
+      "status": 200,
+      "finalUrl": "http://localhost:3001/vagas",
+      "file": "C:\\Users\\Matheus Oliveira\\squad 4\\motstart\\validation-screenshots\\vagas.png"
+    },
+    {
+      "name": "login",
+      "url": "/login",
+      "status": 200,
+      "finalUrl": "http://localhost:3001/perfil",
+      "file": "C:\\Users\\Matheus Oliveira\\squad 4\\motstart\\validation-screenshots\\login.png"
+    }
+  ],
+  "tip": "Abra http://localhost:3001 no navegador (servidor de produção com build limpo)."
+}

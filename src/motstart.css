@@ -255,6 +255,19 @@
   display: none;
 }
 
+.main-header__backdrop[data-visible='true'] {
+  display: block;
+  position: fixed;
+  inset: 0;
+  top: var(--header-h);
+  z-index: 40;
+  background: rgba(17, 24, 39, 0.45);
+  border: none;
+  padding: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
 .main-header__drawer {
   position: absolute;
   top: var(--header-h);
@@ -1073,6 +1086,13 @@
   letter-spacing: 0.02em;
 }
 
+.home-landing-section-head {
+  max-width: 40rem;
+  margin-inline: auto;
+  margin-bottom: 2rem;
+  text-align: center;
+}
+
 .home-landing-kicker {
   margin: 0 0 0.5rem;
   text-align: center;
@@ -1824,6 +1844,14 @@ a.home-course-card.home-course-card--guest {
 }
 
 /* ——— Profile ——— */
+.page--profile {
+  background: var(--color-page);
+}
+
+.page--profile .profile-layout {
+  padding-bottom: 2.5rem;
+}
+
 .profile-hero {
   background: linear-gradient(135deg, var(--color-primary-dark) 0%, var(--color-primary) 45%, #3d1570 100%);
   color: #fff;
@@ -4271,6 +4299,82 @@ a.btn {
   background: #111827;
 }
 
+.profile-tab-panel[hidden] {
+  display: none !important;
+}
+
+.profile-tab-panel {
+  display: block;
+}
+
+.agenda-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.agenda-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem 1rem;
+}
+
+.agenda-toolbar__hint {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--color-muted);
+  flex: 1;
+  min-width: 12rem;
+}
+
+.agenda-toolbar__add {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
+.agenda-add-form {
+  margin: 0;
+  padding: 1.25rem 1.35rem;
+}
+
+.agenda-add-form__title {
+  margin: 0 0 1rem;
+  font-size: 1.0625rem;
+  font-weight: 700;
+}
+
+.agenda-add-form__row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 1rem;
+}
+
+@media (max-width: 560px) {
+  .agenda-add-form__row {
+    grid-template-columns: 1fr;
+  }
+}
+
+.agenda-add-form__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.agenda-item__remove {
+  display: inline-block;
+  margin-top: 0.5rem;
+  padding: 0;
+  border: none;
+  background: none;
+  font-size: 0.8125rem;
+  cursor: pointer;
+}
+
 .agenda-list {
   list-style: none;
   margin: 0;
@@ -4312,6 +4416,14 @@ a.btn {
 .agenda-item__time {
   font-size: 0.75rem;
   color: var(--color-muted);
+}
+
+.agenda-item__main {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.35rem;
+  min-width: 0;
 }
 
 .agenda-item__title {
@@ -4494,6 +4606,15 @@ a.btn {
   font-size: 0.75rem;
   color: var(--color-muted);
   line-height: 1.4;
+}
+
+.course-player-toc {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  max-height: min(52vh, 28rem);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 .course-player-toc__module {

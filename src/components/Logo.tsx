@@ -1,12 +1,14 @@
-import { Link } from 'react-router-dom'
-import { IMAGES } from '../constants/images'
+'use client'
+
+import Link from 'next/link'
+import { IMAGES } from '@/constants/images'
 
 type Props = {
-  to?: string
+  href?: string
   className?: string
 }
 
-export function Logo({ to = '/', className = '' }: Props) {
+export function Logo({ href = '/', className = '' }: Props) {
   const inner = (
     <>
       <img
@@ -20,8 +22,8 @@ export function Logo({ to = '/', className = '' }: Props) {
       <span className="logo-text">MotStart</span>
     </>
   )
-  return to ? (
-    <Link to={to} className={`logo ${className}`}>
+  return href ? (
+    <Link href={href} className={`logo ${className}`}>
       {inner}
     </Link>
   ) : (

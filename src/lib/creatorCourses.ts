@@ -1,5 +1,10 @@
 const KEY = 'motstart_creator_courses_v1'
 
+function storage(): Storage | null {
+  if (typeof window === 'undefined') return null
+  return localStorage
+}
+
 export type CreatorCourseDraft = {
   id: string
   title: string
@@ -13,8 +18,10 @@ export type CreatorCourseDraft = {
 }
 
 function readAll(): CreatorCourseDraft[] {
+  const ls = storage()
+  if (!ls) return []
   try {
-    const raw = localStorage.getItem(KEY)
+    const raw = ls.getItem(KEY)
     if (!raw) return []
     const p = JSON.parse(raw) as CreatorCourseDraft[]
     return Array.isArray(p) ? p : []
@@ -24,7 +31,9 @@ function readAll(): CreatorCourseDraft[] {
 }
 
 function writeAll(list: CreatorCourseDraft[]) {
-  localStorage.setItem(KEY, JSON.stringify(list))
+  const ls = storage()
+  if (!ls) return
+  ls.setItem(KEY, JSON.stringify(list))
 }
 
 export function listCreatorCourses(): CreatorCourseDraft[] {

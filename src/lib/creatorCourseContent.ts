@@ -2,6 +2,11 @@ import type { CreatorCourseDraft } from './creatorCourses'
 
 const KEY = 'motstart_creator_course_content_v1'
 
+function storage(): Storage | null {
+  if (typeof window === 'undefined') return null
+  return localStorage
+}
+
 export type CreatorVideoRow = {
   id: string
   title: string
@@ -32,8 +37,10 @@ export type CreatorCourseContent = {
 }
 
 function readMap(): Record<string, CreatorCourseContent> {
+  const ls = storage()
+  if (!ls) return {}
   try {
-    const raw = localStorage.getItem(KEY)
+    const raw = ls.getItem(KEY)
     if (!raw) return {}
     const p = JSON.parse(raw) as Record<string, CreatorCourseContent>
     return p && typeof p === 'object' ? p : {}
@@ -43,7 +50,9 @@ function readMap(): Record<string, CreatorCourseContent> {
 }
 
 function writeMap(m: Record<string, CreatorCourseContent>) {
-  localStorage.setItem(KEY, JSON.stringify(m))
+  const ls = storage()
+  if (!ls) return
+  ls.setItem(KEY, JSON.stringify(m))
 }
 
 export function getCreatorCourseContent(courseId: string): CreatorCourseContent | null {

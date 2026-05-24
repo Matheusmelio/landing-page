@@ -1,5 +1,8 @@
+'use client'
+
 import { useCallback, useEffect, useState, type ReactNode } from 'react'
-import { Link } from 'react-router-dom'
+import Link from 'next/link'
+import { loginHref } from '@/lib/authUrls'
 import { IMAGES } from '../constants/images'
 
 const AUTO_MS = 6500
@@ -11,7 +14,7 @@ type HeroSlide = {
   kicker: string
   title: ReactNode
   lead: ReactNode
-  cta?: { to: string; label: string; state?: { from: string } }
+  cta?: { href: string; label: string; redirect?: string }
 }
 
 type Bubble = { strong: string; label: string }
@@ -68,7 +71,7 @@ export function LandingGuestHero({ catalogTotal }: { catalogTotal: number }) {
           para você evoluir no seu ritmo.
         </>
       ),
-      cta: { to: '/login', label: 'Explorar cursos', state: { from: '/cursos' } },
+      cta: { href: '/login', label: 'Explorar cursos', redirect: '/cursos' },
     },
     {
       id: 'professores',
@@ -80,7 +83,7 @@ export function LandingGuestHero({ catalogTotal }: { catalogTotal: number }) {
       ),
       lead:
         'Didática clara, experiência de mercado e foco em resultado — mentoria alinhada ao que as empresas buscam hoje.',
-      cta: { to: '#instrutores', label: 'Ver instrutores' },
+      cta: { href: '#instrutores', label: 'Ver instrutores' },
     },
     {
       id: 'noticias',
@@ -92,7 +95,7 @@ export function LandingGuestHero({ catalogTotal }: { catalogTotal: number }) {
       ),
       lead:
         'Acompanhe o que move o mercado de tech — de ferramentas a boas práticas — e use isso a favor da sua trajetória profissional.',
-      cta: { to: '/sobre', label: 'Conheça a MotStart' },
+      cta: { href: '/sobre', label: 'Conheça a MotStart' },
     },
   ]
 
@@ -171,14 +174,13 @@ export function LandingGuestHero({ catalogTotal }: { catalogTotal: number }) {
                 </h1>
                 <p className="home-landing-hero__lead">{slide.lead}</p>
                 {slide.cta ? (
-                  slide.cta.to.startsWith('#') ? (
-                    <a href={slide.cta.to} className="home-hero-carousel__cta link-purple">
+                  slide.cta.href.startsWith('#') ? (
+                    <a href={slide.cta.href} className="home-hero-carousel__cta link-purple">
                       {slide.cta.label} →
                     </a>
                   ) : (
                     <Link
-                      to={slide.cta.to}
-                      state={slide.cta.state}
+                      href={slide.cta.redirect ? loginHref(slide.cta.redirect) : slide.cta.href}
                       className="home-hero-carousel__cta link-purple"
                     >
                       {slide.cta.label} →

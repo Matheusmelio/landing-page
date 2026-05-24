@@ -1,5 +1,7 @@
+'use client'
+
 import { useEffect } from 'react'
-import { useLocation } from 'react-router-dom'
+import { usePathname } from 'next/navigation'
 
 const SITE = 'MotStart'
 
@@ -30,7 +32,7 @@ function titleForPath(pathname: string): string | null {
 }
 
 export function usePageTitle() {
-  const { pathname } = useLocation()
+  const pathname = usePathname()
 
   useEffect(() => {
     const segment = titleForPath(pathname)
@@ -43,7 +45,7 @@ export function usePageTitle() {
 }
 
 export function ScrollToTop() {
-  const { pathname } = useLocation()
+  const pathname = usePathname()
   useEffect(() => {
     window.scrollTo(0, 0)
   }, [pathname])
