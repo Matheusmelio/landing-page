@@ -1,34 +1,22 @@
 import { Router } from 'express'
-import { assertSupabase, supabase } from '../config/supabase.js'
+import { supabase, throwSupabaseError } from '../config/supabase.js'
 import { asyncHandler } from '../middleware/asyncHandler.js'
+import { normalizeEmail, nowIso } from '../utils/normalizers.js'
 
 export const creatorCoursesRouter = Router()
 
 creatorCoursesRouter.get(
   '/',
   asyncHandler(async (req, res) => {
-    assertSupabase()
-
     const authorEmail = String(req.query.authorEmail ?? '')
       .trim()
       .toLowerCase()
 
-    let query = supabase
-      .from('creator_courses')
-      .select('*')
-      .order('created_at', { ascending: false })
-
-    if (authorEmail) {
-      query = query.eq('author_email', authorEmail)
-    }
+    let query = supabase.from('creator_courses').select('*').order('created_at', { ascending: false })
+    if (authorEmail) query = query.eq('author_email', authorEmail)
 
     const { data, error } = await query
-
-    if (error) {
-      const err = new Error(error.message)
-      err.status = 500
-      throw err
-    }
+    throwSupabaseError(error)
 
     res.json({
       ok: true,
@@ -40,8 +28,6 @@ creatorCoursesRouter.get(
 creatorCoursesRouter.post(
   '/',
   asyncHandler(async (req, res) => {
-    assertSupabase()
-
     const {
       id,
       title,
@@ -59,24 +45,31 @@ creatorCoursesRouter.post(
       throw err
     }
 
-    const row = {
+    const course = {
       id: id.trim(),
       title: title.trim(),
       category: category?.trim() ?? '',
       description: description?.trim() ?? '',
       price_label: priceLabel ?? '',
       price_cents: Number(priceCents) || 0,
-      author_email: authorEmail.trim().toLowerCase(),
+      author_email: normalizeEmail(authorEmail),
       author_name: authorName?.trim() ?? authorEmail.split('@')[0],
+      created_at: nowIso(),
     }
 
-    const { data, error } = await supabase.from('creator_courses').upsert(row, { onConflict: 'id' }).select().single()
+    const { data: existing, error: existingError } = await supabase
+      .from('creator_courses')
+      .select('created_at')
+      .eq('id', course.id)
+      .maybeSingle()
+    throwSupabaseError(existingError)
 
-    if (error) {
-      const err = new Error(error.message)
-      err.status = 500
-      throw err
-    }
+    const { data, error } = await supabase
+      .from('creator_courses')
+      .upsert({ ...course, created_at: existing?.created_at ?? course.created_at }, { onConflict: 'id' })
+      .select()
+      .single()
+    throwSupabaseError(error)
 
     res.status(201).json({ ok: true, course: mapCourse(data) })
   }),

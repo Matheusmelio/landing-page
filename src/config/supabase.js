@@ -1,46 +1,28 @@
+import 'dotenv/config'
 import { createClient } from '@supabase/supabase-js'
 
-let _client = null
+const supabaseUrl = process.env.SUPABASE_URL
+const supabaseKey =
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.SUPABASE_ANON_KEY ||
+  process.env.SUPABASE_PUBLISHABLE_KEY
 
-function getConfig() {
-  const url = process.env.SUPABASE_URL?.trim()
-  const serviceKey = process.env.SUPABASE_SERVICE_ROLE_KEY?.trim()
-  return { url, serviceKey }
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Supabase não configurado. Defina SUPABASE_URL e uma chave da API no .env.')
 }
 
-/** Cliente com service role — só no servidor Express, nunca no browser. */
-export function getSupabase() {
-  const { url, serviceKey } = getConfig()
-  if (!url || !serviceKey) return null
-  if (!_client) {
-    _client = createClient(url, serviceKey, {
-      auth: { persistSession: false, autoRefreshToken: false },
-    })
-  }
-  return _client
-}
-
-/** @deprecated use getSupabase() — mantido para rotas existentes */
-export const supabase = new Proxy(
-  {},
-  {
-    get(_target, prop) {
-      const client = getSupabase()
-      if (!client) return undefined
-      const value = client[prop]
-      return typeof value === 'function' ? value.bind(client) : value
-    },
+export const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: false,
+    autoRefreshToken: false,
   },
-)
+})
 
-export function assertSupabase() {
-  const client = getSupabase()
-  if (!client) {
-    const err = new Error(
-      'Supabase não configurado. Defina SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY no arquivo .env',
-    )
-    err.status = 503
-    throw err
-  }
-  return client
+export function throwSupabaseError(error, fallbackMessage = 'Erro ao acessar o banco de dados.') {
+  if (!error) return
+
+  const err = new Error(error.message || fallbackMessage)
+  err.status = 500
+  err.details = error
+  throw err
 }

@@ -11,11 +11,36 @@ import { progressRouter } from './routes/progress.js'
 
 const app = express()
 
-const clientOrigin = process.env.CLIENT_ORIGIN ?? 'http://localhost:3000'
+const configuredOrigins = (process.env.CLIENT_ORIGIN ?? 'http://localhost:3000')
+  .split(',')
+  .map((o) => o.trim())
+  .filter(Boolean)
+
+function isAllowedDevOrigin(origin) {
+  if (!origin) return true
+  if (configuredOrigins.includes(origin)) return true
+
+  try {
+    const url = new URL(origin)
+    const isDevHost =
+      url.hostname === 'localhost' ||
+      url.hostname === '127.0.0.1' ||
+      url.hostname.startsWith('192.168.')
+    return isDevHost && ['3000', '3001'].includes(url.port)
+  } catch {
+    return false
+  }
+}
 
 app.use(
   cors({
-    origin: clientOrigin.split(',').map((o) => o.trim()),
+    origin(origin, callback) {
+      if (isAllowedDevOrigin(origin)) {
+        callback(null, true)
+        return
+      }
+      callback(new Error('Origem não permitida pelo CORS da API'))
+    },
     credentials: true,
   }),
 )
@@ -29,6 +54,8 @@ app.get('/', (_req, res) => {
       'GET  /api/health',
       'POST /api/checkout',
       'POST /api/course-purchases',
+      'POST /api/profiles/register',
+      'POST /api/profiles/login',
       'GET  /api/profiles/:email',
       'PUT  /api/profiles',
       'GET  /api/progress?email=',

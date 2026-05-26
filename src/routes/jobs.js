@@ -1,35 +1,19 @@
 import { Router } from 'express'
-import { assertSupabase, supabase } from '../config/supabase.js'
+import { supabase, throwSupabaseError } from '../config/supabase.js'
 import { asyncHandler } from '../middleware/asyncHandler.js'
+import { makeId, normalizeEmail, nowIso } from '../utils/normalizers.js'
 
 export const jobsRouter = Router()
 
 jobsRouter.get(
   '/',
   asyncHandler(async (_req, res) => {
-    assertSupabase()
-
-    const { data, error } = await supabase
-      .from('published_jobs')
-      .select('id, title, stack, modality, author_email, created_at')
-      .order('created_at', { ascending: false })
-
-    if (error) {
-      const err = new Error(error.message)
-      err.status = 500
-      throw err
-    }
+    const { data, error } = await supabase.from('jobs').select('*').order('created_at', { ascending: false })
+    throwSupabaseError(error)
 
     res.json({
       ok: true,
-      jobs: (data ?? []).map((j) => ({
-        id: j.id,
-        title: j.title,
-        stack: j.stack,
-        modality: j.modality,
-        authorEmail: j.author_email,
-        createdAt: j.created_at,
-      })),
+      jobs: (data ?? []).map(mapJob),
     })
   }),
 )
@@ -37,8 +21,6 @@ jobsRouter.get(
 jobsRouter.post(
   '/',
   asyncHandler(async (req, res) => {
-    assertSupabase()
-
     const { title, stack, modality, authorEmail } = req.body ?? {}
 
     if (!title?.trim() || !authorEmail?.includes('@')) {
@@ -47,32 +29,21 @@ jobsRouter.post(
       throw err
     }
 
-    const { data, error } = await supabase
-      .from('published_jobs')
-      .insert({
-        title: title.trim(),
-        stack: stack?.trim() || '—',
-        modality: modality?.trim() || 'Remoto',
-        author_email: authorEmail.trim().toLowerCase(),
-      })
-      .select()
-      .single()
-
-    if (error) {
-      const err = new Error(error.message)
-      err.status = 500
-      throw err
+    const job = {
+      id: makeId('JOB'),
+      title: title.trim(),
+      stack: stack?.trim() || '—',
+      modality: modality?.trim() || 'Remoto',
+      author_email: normalizeEmail(authorEmail),
+      created_at: nowIso(),
     }
+
+    const { data, error } = await supabase.from('jobs').insert(job).select().single()
+    throwSupabaseError(error)
 
     res.status(201).json({
       ok: true,
-      job: {
-        id: data.id,
-        title: data.title,
-        stack: data.stack,
-        modality: data.modality,
-        createdAt: data.created_at,
-      },
+      job: mapJob(data),
     })
   }),
 )
@@ -80,16 +51,20 @@ jobsRouter.post(
 jobsRouter.delete(
   '/:id',
   asyncHandler(async (req, res) => {
-    assertSupabase()
-
-    const { error } = await supabase.from('published_jobs').delete().eq('id', req.params.id)
-
-    if (error) {
-      const err = new Error(error.message)
-      err.status = 500
-      throw err
-    }
+    const { error } = await supabase.from('jobs').delete().eq('id', req.params.id)
+    throwSupabaseError(error)
 
     res.json({ ok: true })
   }),
 )
+
+function mapJob(row) {
+  return {
+    id: row.id,
+    title: row.title,
+    stack: row.stack,
+    modality: row.modality,
+    authorEmail: row.author_email,
+    createdAt: row.created_at,
+  }
+}

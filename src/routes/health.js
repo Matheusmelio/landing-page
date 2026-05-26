@@ -1,41 +1,21 @@
 import { Router } from 'express'
-import { assertSupabase, getSupabase } from '../config/supabase.js'
+import { supabase } from '../config/supabase.js'
 
 export const healthRouter = Router()
 
 healthRouter.get('/', async (_req, res) => {
-  let database = 'not_configured'
-
-  const sb = getSupabase()
-  if (sb) {
-    try {
-      const { error } = await sb.from('profiles').select('id').limit(1)
-      database = error ? 'error' : 'ok'
-    } catch {
-      database = 'error'
-    }
-  }
+  const { error } = await supabase.from('profiles').select('email', { count: 'exact', head: true })
 
   res.json({
-    ok: true,
+    ok: !error,
     service: 'motstart-api',
-    database,
+    storage: 'supabase',
+    database: error ? 'error' : 'connected',
     timestamp: new Date().toISOString(),
   })
 })
 
-healthRouter.get('/db', async (_req, res, next) => {
-  try {
-    const sb = assertSupabase()
-    const { error } = await sb.from('profiles').select('id').limit(1)
-    if (error) {
-      const err = new Error(error.message)
-      err.status = 503
-      err.details = error
-      throw err
-    }
-    res.json({ ok: true, database: 'ok' })
-  } catch (e) {
-    next(e)
-  }
+healthRouter.get('/storage', async (_req, res) => {
+  const { error } = await supabase.from('profiles').select('email', { count: 'exact', head: true })
+  res.json({ ok: !error, storage: 'supabase', database: error ? 'error' : 'connected' })
 })

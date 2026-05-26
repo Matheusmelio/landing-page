@@ -1,15 +1,14 @@
 import { Router } from 'express'
-import { assertSupabase, supabase } from '../config/supabase.js'
+import { supabase, throwSupabaseError } from '../config/supabase.js'
 import { asyncHandler } from '../middleware/asyncHandler.js'
 import { makeOrderId } from '../utils/orderId.js'
+import { normalizeEmail, nowIso } from '../utils/normalizers.js'
 
 export const coursePurchasesRouter = Router()
 
 coursePurchasesRouter.post(
   '/',
   asyncHandler(async (req, res) => {
-    assertSupabase()
-
     const { courseId, payerName, payerEmail, cardLast4 } = req.body ?? {}
 
     if (!courseId?.trim()) {
@@ -23,7 +22,7 @@ coursePurchasesRouter.post(
       throw err
     }
 
-    const email = payerEmail.trim().toLowerCase()
+    const email = normalizeEmail(payerEmail)
     const orderId = makeOrderId('MSC')
 
     const { error: purchaseError } = await supabase.from('course_purchases').insert({
@@ -32,31 +31,17 @@ coursePurchasesRouter.post(
       payer_name: payerName?.trim() || 'Cliente',
       payer_email: email,
       card_last4: String(cardLast4 ?? '').replace(/\D/g, '').slice(-4) || null,
+      created_at: nowIso(),
     })
+    throwSupabaseError(purchaseError)
 
-    if (purchaseError) {
-      const err = new Error(purchaseError.message)
-      err.status = 500
-      err.details = purchaseError
-      throw err
-    }
-
-    const { error: progressError } = await supabase.from('course_progress').upsert(
-      {
-        user_email: email,
-        course_id: courseId.trim(),
-        status: 'em-andamento',
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_email,course_id' },
-    )
-
-    if (progressError) {
-      const err = new Error(progressError.message)
-      err.status = 500
-      err.details = progressError
-      throw err
-    }
+    const { error: progressError } = await supabase.from('course_progress').upsert({
+      email,
+      course_id: courseId.trim(),
+      status: 'em-andamento',
+      updated_at: nowIso(),
+    }, { onConflict: 'email,course_id' })
+    throwSupabaseError(progressError)
 
     res.status(201).json({
       ok: true,

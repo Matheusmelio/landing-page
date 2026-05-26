@@ -1,7 +1,8 @@
 import { Router } from 'express'
-import { assertSupabase, supabase } from '../config/supabase.js'
+import { supabase, throwSupabaseError } from '../config/supabase.js'
 import { asyncHandler } from '../middleware/asyncHandler.js'
 import { makeOrderId } from '../utils/orderId.js'
+import { normalizeEmail, nowIso } from '../utils/normalizers.js'
 
 const VALID_PLANS = new Set(['basico', 'completo', 'premium'])
 
@@ -10,8 +11,6 @@ export const checkoutRouter = Router()
 checkoutRouter.post(
   '/',
   asyncHandler(async (req, res) => {
-    assertSupabase()
-
     const { planId, payerName, payerEmail, cardLast4, userEmail } = req.body ?? {}
 
     if (!VALID_PLANS.has(planId)) {
@@ -25,40 +24,45 @@ checkoutRouter.post(
       throw err
     }
 
-    const email = (userEmail || payerEmail).trim().toLowerCase()
+    const email = normalizeEmail(userEmail || payerEmail)
     const orderId = makeOrderId('MS')
 
     const { error: orderError } = await supabase.from('plan_orders').insert({
       order_id: orderId,
       plan_id: planId,
       payer_name: payerName?.trim() || 'Cliente',
-      payer_email: payerEmail.trim().toLowerCase(),
+      payer_email: normalizeEmail(payerEmail),
       card_last4: String(cardLast4 ?? '').replace(/\D/g, '').slice(-4) || null,
       user_email: email,
+      created_at: nowIso(),
     })
+    throwSupabaseError(orderError)
 
-    if (orderError) {
-      const err = new Error(orderError.message)
-      err.status = 500
-      err.details = orderError
-      throw err
-    }
+    const { data: profile, error: profileError } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('email', email)
+      .maybeSingle()
+    throwSupabaseError(profileError)
 
-    const { error: profileError } = await supabase.from('profiles').upsert(
-      {
+    if (profile) {
+      const { error } = await supabase
+        .from('profiles')
+        .update({ active_plan_id: planId, updated_at: nowIso() })
+        .eq('email', email)
+      throwSupabaseError(error)
+    } else {
+      const { error } = await supabase.from('profiles').insert({
         email,
         name: payerName?.trim() || email.split('@')[0],
+        role: 'student',
+        company_name: null,
+        enterprise_plan: null,
         active_plan_id: planId,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'email' },
-    )
-
-    if (profileError) {
-      const err = new Error(profileError.message)
-      err.status = 500
-      err.details = profileError
-      throw err
+        created_at: nowIso(),
+        updated_at: nowIso(),
+      })
+      throwSupabaseError(error)
     }
 
     res.status(201).json({

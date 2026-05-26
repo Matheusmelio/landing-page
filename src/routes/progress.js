@@ -1,6 +1,7 @@
 import { Router } from 'express'
-import { assertSupabase, supabase } from '../config/supabase.js'
+import { supabase, throwSupabaseError } from '../config/supabase.js'
 import { asyncHandler } from '../middleware/asyncHandler.js'
+import { normalizeEmail, nowIso } from '../utils/normalizers.js'
 
 const VALID_STATUS = new Set(['em-andamento', 'disponivel', 'concluido'])
 
@@ -9,7 +10,6 @@ export const progressRouter = Router()
 progressRouter.get(
   '/',
   asyncHandler(async (req, res) => {
-    assertSupabase()
     const email = String(req.query.email ?? '')
       .trim()
       .toLowerCase()
@@ -20,18 +20,13 @@ progressRouter.get(
       throw err
     }
 
-    const { data, error } = await supabase.from('course_progress').select('course_id, status').eq('user_email', email)
+    const { data, error } = await supabase
+      .from('course_progress')
+      .select('course_id,status')
+      .eq('email', email)
+    throwSupabaseError(error)
 
-    if (error) {
-      const err = new Error(error.message)
-      err.status = 500
-      throw err
-    }
-
-    const progress = {}
-    for (const row of data ?? []) {
-      progress[row.course_id] = row.status
-    }
+    const progress = Object.fromEntries((data ?? []).map((row) => [row.course_id, row.status]))
 
     res.json({ ok: true, progress })
   }),
@@ -40,10 +35,8 @@ progressRouter.get(
 progressRouter.put(
   '/',
   asyncHandler(async (req, res) => {
-    assertSupabase()
-
     const { email, courseId, status, progress: bulk } = req.body ?? {}
-    const userEmail = email?.trim().toLowerCase()
+    const userEmail = normalizeEmail(email)
 
     if (!userEmail?.includes('@')) {
       const err = new Error('email é obrigatório')
@@ -52,31 +45,26 @@ progressRouter.put(
     }
 
     if (bulk && typeof bulk === 'object') {
-      const rows = Object.entries(bulk)
+      const entries = Object.entries(bulk)
         .filter(([, v]) => VALID_STATUS.has(v))
-        .map(([course_id, s]) => ({
-          user_email: userEmail,
-          course_id,
+        .map(([courseId, s]) => ({
+          email: userEmail,
+          course_id: courseId,
           status: s,
-          updated_at: new Date().toISOString(),
+          updated_at: nowIso(),
         }))
 
-      if (rows.length === 0) {
+      if (entries.length === 0) {
         res.json({ ok: true, updated: 0 })
         return
       }
 
-      const { error } = await supabase.from('course_progress').upsert(rows, {
-        onConflict: 'user_email,course_id',
+      const { error } = await supabase.from('course_progress').upsert(entries, {
+        onConflict: 'email,course_id',
       })
+      throwSupabaseError(error)
 
-      if (error) {
-        const err = new Error(error.message)
-        err.status = 500
-        throw err
-      }
-
-      res.json({ ok: true, updated: rows.length })
+      res.json({ ok: true, updated: entries.length })
       return
     }
 
@@ -86,21 +74,13 @@ progressRouter.put(
       throw err
     }
 
-    const { error } = await supabase.from('course_progress').upsert(
-      {
-        user_email: userEmail,
-        course_id: courseId,
-        status,
-        updated_at: new Date().toISOString(),
-      },
-      { onConflict: 'user_email,course_id' },
-    )
-
-    if (error) {
-      const err = new Error(error.message)
-      err.status = 500
-      throw err
-    }
+    const { error } = await supabase.from('course_progress').upsert({
+      email: userEmail,
+      course_id: courseId,
+      status,
+      updated_at: nowIso(),
+    }, { onConflict: 'email,course_id' })
+    throwSupabaseError(error)
 
     res.json({ ok: true, courseId, status })
   }),
