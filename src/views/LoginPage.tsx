@@ -8,6 +8,7 @@ import type { EnterprisePlan } from '@/lib/enterprisePlan'
 import { useAuth } from '@/auth/AuthContext'
 import { ClientRedirect } from '@/components/ClientRedirect'
 import { Logo } from '@/components/Logo'
+import { loginProfile } from '@/lib/api/profiles'
 import { postAuthRedirect } from '@/lib/authRedirect'
 import { registerHref } from '@/lib/authUrls'
 
@@ -20,6 +21,8 @@ export function LoginPage() {
   const [role, setRole] = useState<UserRole>(defaultRole)
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [enterprisePlan, setEnterprisePlan] = useState<EnterprisePlan>(() =>
     params.get('plano') === 'avulsa' ? 'standard' : 'contract_employee',
   )
@@ -31,17 +34,21 @@ export function LoginPage() {
     return <ClientRedirect href={redirectAfterAuth} />
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    const short = email.split('@')[0] || 'Usuario'
-    login({
-      email: email.trim() || 'user@motstart.com',
-      name: short,
-      role,
-      companyName: role === 'enterprise' ? `${short} Ltda` : undefined,
-      enterprisePlan: role === 'enterprise' ? enterprisePlan : undefined,
-    })
-    router.replace(postAuthRedirect(params.get('redirect')))
+    if (isSaving) return
+
+    setSubmitError('')
+    setIsSaving(true)
+    try {
+      const savedUser = await loginProfile(email.trim().toLowerCase(), password)
+      login(savedUser)
+      router.replace(postAuthRedirect(params.get('redirect')))
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Não foi possível entrar. Verifique seus dados.')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   const cadastroHref = registerHref(redirectParam ?? undefined, {
@@ -159,8 +166,13 @@ export function LoginPage() {
                 required
               />
             </label>
-            <button type="submit" className="btn btn-primary btn-block auth-submit">
-              Entrar
+            {submitError ? (
+              <p className="auth-error" role="alert">
+                {submitError}
+              </p>
+            ) : null}
+            <button type="submit" className="btn btn-primary btn-block auth-submit" disabled={isSaving}>
+              {isSaving ? 'Entrando...' : 'Entrar'}
             </button>
           </form>
 

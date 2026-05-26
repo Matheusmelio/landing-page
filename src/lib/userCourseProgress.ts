@@ -14,32 +14,19 @@ function userPlanStorageKey(email: string) {
   return `motstart_active_plan_user_v1:${email.toLowerCase().trim()}`
 }
 
-const DEFAULT_PROGRESS: Record<string, CourseBucket> = {
-  c1: 'em-andamento',
-  c2: 'em-andamento',
-  c3: 'em-andamento',
-  c4: 'em-andamento',
-  c5: 'em-andamento',
-  c6: 'em-andamento',
-  c7: 'em-andamento',
-  c8: 'em-andamento',
-  c9: 'em-andamento',
-  c10: 'em-andamento',
-  c11: 'em-andamento',
-  c12: 'em-andamento',
-  c13: 'disponivel',
-  c14: 'disponivel',
-  c15: 'disponivel',
-  c16: 'disponivel',
-  c17: 'concluido',
-  c18: 'concluido',
+function userProgressStorageKey(email: string | null | undefined) {
+  return email ? `${KEY}:${email.toLowerCase().trim()}` : KEY
 }
 
-function readRaw(): Record<string, CourseBucket> | null {
+function defaultProgress(): Record<string, CourseBucket> {
+  return Object.fromEntries(HOME_COURSES.map((course) => [course.id, 'disponivel'])) as Record<string, CourseBucket>
+}
+
+function readRaw(email?: string | null): Record<string, CourseBucket> | null {
   const ls = storage()
   if (!ls) return null
   try {
-    const raw = ls.getItem(KEY)
+    const raw = ls.getItem(userProgressStorageKey(email))
     if (!raw) return null
     return JSON.parse(raw) as Record<string, CourseBucket>
   } catch {
@@ -52,7 +39,7 @@ function isBucket(v: unknown): v is CourseBucket {
 }
 
 function mergeProgress(existing: Record<string, CourseBucket> | null): Record<string, CourseBucket> {
-  const merged: Record<string, CourseBucket> = { ...DEFAULT_PROGRESS }
+  const merged = defaultProgress()
   if (existing) {
     for (const [id, v] of Object.entries(existing)) {
       if (isBucket(v)) merged[id] = v
@@ -64,46 +51,49 @@ function mergeProgress(existing: Record<string, CourseBucket> | null): Record<st
   return merged
 }
 
-function writeProgressMap(map: Record<string, CourseBucket>) {
+function writeProgressMap(map: Record<string, CourseBucket>, email?: string | null) {
   const ls = storage()
   if (!ls) return
-  ls.setItem(KEY, JSON.stringify(map))
+  ls.setItem(userProgressStorageKey(email), JSON.stringify(map))
   window.dispatchEvent(new Event('motstart-progress-change'))
 }
 
-function persistIfChanged(prev: Record<string, CourseBucket> | null, next: Record<string, CourseBucket>) {
+function persistIfChanged(prev: Record<string, CourseBucket> | null, next: Record<string, CourseBucket>, email?: string | null) {
   const ls = storage()
   if (!ls) return
   if (!prev || JSON.stringify(prev) !== JSON.stringify(next)) {
-    writeProgressMap(next)
+    writeProgressMap(next, email)
   }
 }
 
-/** Carrega progresso do Supabase para o cache local (quando API ativa). */
+/** Carrega progresso da API para o cache local. Usuário novo começa sem cursos conectados. */
 export async function hydrateProgressFromApi(email: string): Promise<void> {
   if (!email || !isApiEnabled()) return
   try {
     const remote = await fetchProgressFromApi(email)
     const hasRemote = Object.keys(remote).length > 0
-    const merged = mergeProgress(hasRemote ? remote : readRaw())
-    writeProgressMap(merged)
+    const merged = mergeProgress(hasRemote ? remote : readRaw(email))
+    writeProgressMap(merged, email)
     if (hasRemote) return
-    await saveProgressToApi(email, merged)
+    const connectedOnly = Object.fromEntries(
+      Object.entries(merged).filter(([, bucket]) => bucket !== 'disponivel'),
+    ) as Record<string, CourseBucket>
+    if (Object.keys(connectedOnly).length > 0) await saveProgressToApi(email, connectedOnly)
   } catch (err) {
     console.warn('[motstart] hydrateProgressFromApi', err)
   }
 }
 
-export function getCourseProgressMap(): Record<string, CourseBucket> {
-  const raw = readRaw()
+export function getCourseProgressMap(email?: string | null): Record<string, CourseBucket> {
+  const raw = readRaw(email)
   const merged = mergeProgress(raw)
-  persistIfChanged(raw, merged)
+  persistIfChanged(raw, merged, email)
   return merged
 }
 
 export function setCourseBucket(courseId: string, bucket: CourseBucket, userEmail?: string) {
-  const map = { ...getCourseProgressMap(), [courseId]: bucket }
-  writeProgressMap(map)
+  const map = { ...getCourseProgressMap(userEmail), [courseId]: bucket }
+  writeProgressMap(map, userEmail)
 
   if (userEmail && isApiEnabled()) {
     void updateCourseBucketOnApi(userEmail, courseId, bucket).catch((err) =>
@@ -159,4 +149,8 @@ export function countByBucket(progress: Record<string, CourseBucket>) {
     else if (status === 'concluido') concluidos++
   }
   return { emAndamento, disponiveis, concluidos }
+}
+
+export function isConnectedCourse(bucket: CourseBucket | undefined): boolean {
+  return bucket === 'em-andamento' || bucket === 'concluido'
 }

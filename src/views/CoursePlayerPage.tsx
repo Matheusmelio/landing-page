@@ -12,7 +12,7 @@ import { getTeachingMeta } from '../data/courseTeachingMeta'
 import { getCourseOutline } from '../lib/courseModulesOutline'
 import { progressPercentForCourse } from '../lib/courseProgressDisplay'
 import { useCourseProgress } from '@/hooks/useCourseProgress'
-import { hasActivePlanForUser } from '../lib/userCourseProgress'
+import { hasActivePlanForUser, isConnectedCourse, setCourseBucket } from '../lib/userCourseProgress'
 
 export function CoursePlayerPage() {
   const routeParams = useParams()
@@ -54,8 +54,13 @@ export function CoursePlayerPage() {
   }
 
   const pct = progressPercentForCourse(course.id, bucket)
+  const connected = isConnectedCourse(bucket)
   const activeLesson =
     outline.flatMap((m) => m.lessons).find((l) => l.id === activeLessonId) ?? outline[0]?.lessons[0]
+
+  const startCourse = () => {
+    setCourseBucket(course.id, 'em-andamento', user.email)
+  }
 
   return (
     <div className="page page--course-player">
@@ -75,11 +80,26 @@ export function CoursePlayerPage() {
 
       <div className="container course-player-layout">
         <aside className="course-player-sidebar" aria-label="Conteúdo do curso">
-          <p className="course-player-sidebar__kicker">Seu progresso</p>
-          <div className="course-player-sidebar__pct">{pct}%</div>
-          <div className="progress-bar course-player-sidebar__bar" role="progressbar" aria-valuenow={pct}>
-            <div className="progress-bar__fill" style={{ width: `${pct}%` }} />
-          </div>
+          {connected ? (
+            <>
+              <p className="course-player-sidebar__kicker">Seu progresso</p>
+              <div className="course-player-sidebar__pct">{pct}%</div>
+              <div className="progress-bar course-player-sidebar__bar" role="progressbar" aria-valuenow={pct}>
+                <div className="progress-bar__fill" style={{ width: `${pct}%` }} />
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="course-player-sidebar__kicker">Acesso liberado</p>
+              <div className="course-player-sidebar__pct">0%</div>
+              <p className="course-player-sidebar__meta">
+                Inicie este curso para conectá-lo ao seu perfil e habilitar a barra de progresso.
+              </p>
+              <button type="button" className="btn btn-primary btn-block" onClick={startCourse}>
+                Iniciar curso
+              </button>
+            </>
+          )}
           <p className="course-player-sidebar__meta">
             {meta.hours}h · {meta.modules} módulos · {meta.instructor}
           </p>
@@ -125,8 +145,8 @@ export function CoursePlayerPage() {
             exercícios com IA vinculados à aula.
           </p>
           <div className="course-player-actions">
-            <button type="button" className="btn btn-primary">
-              Marcar aula como concluída
+            <button type="button" className="btn btn-primary" onClick={connected ? undefined : startCourse}>
+              {connected ? 'Marcar aula como concluída' : 'Iniciar curso'}
             </button>
             <Link href="/exercicios-ia" className="btn btn-outline-primary">
               Praticar com IA

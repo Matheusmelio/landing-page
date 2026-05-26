@@ -13,7 +13,7 @@ import { HOME_COURSES } from '../data/homeCourses'
 import { progressPercentForCourse } from '../lib/courseProgressDisplay'
 import { getContractTeamProgressDemo } from '../lib/enterpriseTeamProgress'
 import { useCourseProgress } from '@/hooks/useCourseProgress'
-import { countByBucket, hasActivePlanForUser } from '../lib/userCourseProgress'
+import { countByBucket, hasActivePlanForUser, isConnectedCourse } from '../lib/userCourseProgress'
 
 type TabId = 'em-andamento' | 'disponiveis' | 'concluidos'
 
@@ -47,6 +47,7 @@ export function HomePage() {
   const hasPlan = Boolean(user && hasActivePlanForUser(user.email))
 
   const counts = useMemo(() => countByBucket(progress), [progress])
+  const hasConnectedCourses = counts.emAndamento + counts.concluidos > 0
 
   const visibleCourses = useMemo(() => {
     const bucket = bucketForTab(activeTab)
@@ -278,17 +279,29 @@ export function HomePage() {
 
             <div className="container hero__content">
               <p className="hero-dashboard__eyebrow">Seu painel</p>
-              <h1 className="hero__title">Olá{user?.name ? `, ${user.name.split(' ')[0]}` : ''} — continue de onde parou</h1>
+              <h1 className="hero__title">
+                Olá{user?.name ? `, ${user.name.split(' ')[0]}` : ''} —{' '}
+                {hasConnectedCourses ? 'continue de onde parou' : 'escolha seu primeiro curso'}
+              </h1>
               <p className="hero__subtitle">
-                Acompanhe cursos em andamento, disponíveis para você e concluídos. Agenda e conquistas ficam no seu{' '}
-                <Link href="/perfil" className="hero-dashboard__link">
-                  Perfil
-                </Link>
-                . Compre cursos ou planos em{' '}
-                <Link href="/cursos" className="hero-dashboard__link">
-                  Cursos
-                </Link>
-                .
+                {hasConnectedCourses ? (
+                  <>
+                    Acompanhe cursos em andamento, disponíveis para você e concluídos. Agenda e conquistas ficam no seu{' '}
+                    <Link href="/perfil" className="hero-dashboard__link">
+                      Perfil
+                    </Link>
+                    . Compre cursos ou planos em{' '}
+                    <Link href="/cursos" className="hero-dashboard__link">
+                      Cursos
+                    </Link>
+                    .
+                  </>
+                ) : (
+                  <>
+                    Sua conta ainda não está conectada a nenhum curso. Compre um curso avulso ou escolha um plano para
+                    liberar acesso e começar a acompanhar progresso.
+                  </>
+                )}
               </p>
 
               <div className="hero-stats">
@@ -438,15 +451,21 @@ export function HomePage() {
             <div className="home-course-grid">
               {visibleCourses.length === 0 ? (
                 <p className="home-empty" role="status">
-                  Nenhum curso nesta categoria.
+                  {activeTab === 'em-andamento'
+                    ? 'Nenhum curso em andamento ainda. Compre ou conecte-se a um curso para começar.'
+                    : activeTab === 'concluidos'
+                      ? 'Você ainda não concluiu nenhum curso.'
+                      : 'Nenhum curso disponível nesta lista.'}
                 </p>
               ) : (
                 visibleCourses.map((c) => {
                   const bucket = progress[c.id] ?? 'disponivel'
                   const pct = progressPercentForCourse(c.id, bucket)
                   const showPlatformSeal = hasPlan && c.isPlatformCourse
+                  const connected = isConnectedCourse(bucket)
+                  const href = connected || (hasPlan && c.isPlatformCourse) ? `/curso/${c.id}` : `/curso/${c.id}/comprar`
                   return (
-                    <Link key={c.id} href={`/curso/${c.id}`} className="home-course-card">
+                    <Link key={c.id} href={href} className="home-course-card">
                       <div className="home-course-card__image-wrap">
                         <img src={c.image} alt="" className="home-course-card__image" />
                         <span className="badge badge--category">{c.category}</span>
@@ -463,21 +482,28 @@ export function HomePage() {
                           <span>★ {c.rating}</span>
                           <span>{c.students.toLocaleString('pt-BR')} alunos</span>
                         </p>
-                        <div className="home-course-card__progress-block">
-                          <div className="home-course-card__progress-row">
-                            <span>Progresso</span>
-                            <span>{pct}%</span>
+                        {connected ? (
+                          <div className="home-course-card__progress-block">
+                            <div className="home-course-card__progress-row">
+                              <span>{bucket === 'concluido' ? 'Concluído' : 'Progresso'}</span>
+                              <span>{pct}%</span>
+                            </div>
+                            <div
+                              className="progress-bar progress-bar--course-card"
+                              role="progressbar"
+                              aria-valuenow={pct}
+                              aria-valuemin={0}
+                              aria-valuemax={100}
+                            >
+                              <div className="progress-bar__fill" style={{ width: `${pct}%` }} />
+                            </div>
                           </div>
-                          <div
-                            className="progress-bar progress-bar--course-card"
-                            role="progressbar"
-                            aria-valuenow={pct}
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                          >
-                            <div className="progress-bar__fill" style={{ width: `${pct}%` }} />
-                          </div>
-                        </div>
+                        ) : (
+                          <>
+                            <p className="home-course-card__price">{c.priceLabel}</p>
+                            <p className="home-course-card__buy-cta">Comprar para iniciar</p>
+                          </>
+                        )}
                       </div>
                     </Link>
                   )

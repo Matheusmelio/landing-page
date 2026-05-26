@@ -16,7 +16,7 @@ import { HOME_COURSES } from '../data/homeCourses'
 import { getPlanById } from '../data/plans'
 import { progressPercentForCourse } from '../lib/courseProgressDisplay'
 import { useCourseProgress } from '@/hooks/useCourseProgress'
-import { getActivePlanIdForUser } from '../lib/userCourseProgress'
+import { countByBucket, getActivePlanIdForUser } from '../lib/userCourseProgress'
 
 type EnterpriseUser = AuthUser & { role: 'enterprise' }
 
@@ -57,6 +57,15 @@ function StudentProfile({ user }: { user: { name: string; email: string } }) {
     () => HOME_COURSES.filter((c) => progress[c.id] === 'em-andamento'),
     [progress],
   )
+  const progressCounts = useMemo(() => countByBucket(progress), [progress])
+  const hasConnectedCourses = progressCounts.emAndamento + progressCounts.concluidos > 0
+  const estimatedHours = useMemo(
+    () =>
+      HOME_COURSES.filter((course) => progress[course.id] === 'em-andamento' || progress[course.id] === 'concluido')
+        .map((course) => getTeachingMeta(course.id).hours)
+        .reduce((sum, hours) => sum + hours, 0),
+    [progress],
+  )
 
   return (
     <div className="page page--profile">
@@ -85,8 +94,9 @@ function StudentProfile({ user }: { user: { name: string; email: string } }) {
                 ) : null}
               </h1>
               <p className="profile-hero__bio">
-                Estudante de Ciência da Computação apaixonada por desenvolvimento web e inteligência artificial. Sempre
-                em busca de novos conhecimentos!
+                {hasConnectedCourses
+                  ? 'Acompanhe seus cursos conectados, progresso e próximos passos de aprendizado.'
+                  : 'Sua conta está criada. Compre um curso ou escolha um plano para começar sua jornada de aprendizado.'}
               </p>
             </div>
           </div>
@@ -128,28 +138,28 @@ function StudentProfile({ user }: { user: { name: string; email: string } }) {
               🏆
             </span>
             <span className="profile-stat__label">Concluídos</span>
-            <span className="profile-stat__value">4</span>
+            <span className="profile-stat__value">{progressCounts.concluidos}</span>
           </div>
           <div className="profile-stat">
             <span className="profile-stat__icon" aria-hidden="true">
               📖
             </span>
             <span className="profile-stat__label">Em Progresso</span>
-            <span className="profile-stat__value">5</span>
+            <span className="profile-stat__value">{progressCounts.emAndamento}</span>
           </div>
           <div className="profile-stat">
             <span className="profile-stat__icon" aria-hidden="true">
               🕐
             </span>
             <span className="profile-stat__label">Horas</span>
-            <span className="profile-stat__value">287h</span>
+            <span className="profile-stat__value">{estimatedHours}h</span>
           </div>
           <div className="profile-stat">
             <span className="profile-stat__icon" aria-hidden="true">
               🔥
             </span>
             <span className="profile-stat__label">Sequência</span>
-            <span className="profile-stat__value">12 dias</span>
+            <span className="profile-stat__value">{hasConnectedCourses ? '1 dia' : '0 dias'}</span>
           </div>
         </div>
       </section>

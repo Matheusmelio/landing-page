@@ -9,7 +9,7 @@ import type { CourseBucket, HomeCourseItem } from '../data/homeCourses'
 import { HOME_COURSES } from '../data/homeCourses'
 import { progressPercentForCourse } from '../lib/courseProgressDisplay'
 import { useCourseProgress } from '@/hooks/useCourseProgress'
-import { hasActivePlanForUser } from '../lib/userCourseProgress'
+import { hasActivePlanForUser, isConnectedCourse } from '../lib/userCourseProgress'
 
 function statusLabel(b: CourseBucket): string {
   if (b === 'em-andamento') return 'Em Andamento'
@@ -200,6 +200,7 @@ export function CoursesPage() {
               const showPlatformSeal = hasPlan && c.isPlatformCourse
               const to = courseHref(c, isLoggedIn, bucket, hasPlan)
               const buy = isLoggedIn && needsAvulsoPurchase(c, bucket, hasPlan)
+              const connected = isConnectedCourse(bucket)
               return (
                 <Link
                   key={c.id}
@@ -229,6 +230,13 @@ export function CoursesPage() {
                       <>
                         <p className="home-course-card__price">{c.priceLabel}</p>
                         <p className="home-course-card__buy-cta">Clique para comprar</p>
+                      </>
+                    ) : !connected ? (
+                      <>
+                        <p className="home-course-card__price">{showPlatformSeal ? 'Incluso no plano' : c.priceLabel}</p>
+                        <p className="home-course-card__buy-cta">
+                          {showPlatformSeal ? 'Iniciar pelo plano' : 'Comprar para iniciar'}
+                        </p>
                       </>
                     ) : (
                       <div className="home-course-card__progress-block">

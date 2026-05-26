@@ -12,6 +12,15 @@ type ApiProfile = {
   activePlanId?: string | null
 }
 
+type AuthResponse = {
+  ok: true
+  profile: ApiProfile
+}
+
+type RegisterProfilePayload = AuthUser & {
+  password: string
+}
+
 function toAuthUser(p: ApiProfile): AuthUser {
   if (p.role === 'enterprise') {
     return {
@@ -23,6 +32,34 @@ function toAuthUser(p: ApiProfile): AuthUser {
     }
   }
   return { email: p.email, name: p.name, role: 'student' }
+}
+
+export async function registerProfile(user: RegisterProfilePayload): Promise<AuthUser> {
+  const res = await apiFetch<AuthResponse>('/api/profiles/register', {
+    method: 'POST',
+    body: JSON.stringify({
+      email: user.email,
+      name: user.name,
+      password: user.password,
+      role: user.role,
+      companyName: user.companyName,
+      enterprisePlan: user.enterprisePlan,
+    }),
+  })
+
+  return toAuthUser(res.profile)
+}
+
+export async function loginProfile(email: string, password: string): Promise<AuthUser> {
+  const res = await apiFetch<AuthResponse>('/api/profiles/login', {
+    method: 'POST',
+    body: JSON.stringify({
+      email,
+      password,
+    }),
+  })
+
+  return toAuthUser(res.profile)
 }
 
 export async function upsertProfile(user: AuthUser): Promise<void> {

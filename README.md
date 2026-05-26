@@ -25,9 +25,9 @@ npm start
 - `src/components/`, `src/lib/`, `src/data/` — UI e lógica compartilhada
 - `public/` — assets estáticos
 
-## API + Supabase
+## API
 
-A API Express + Supabase fica em uma pasta separada, ao lado deste frontend: `../motstart-api/`.
+A API Express fica em uma pasta separada, ao lado deste frontend: `../motstart-api/`.
 
 ```bash
 # Terminal 1 — frontend
@@ -36,7 +36,7 @@ npm run dev
 # Terminal 2 — API (veja ../motstart-api/README.md)
 cd ../motstart-api
 npm install
-cp .env.example .env   # configure Supabase
+cp .env.example .env
 npm run dev
 ```
 
@@ -46,9 +46,9 @@ Com `NEXT_PUBLIC_API_URL` configurada:
 
 | Recurso | Comportamento |
 |---------|----------------|
-| Login / cadastro | Sincroniza perfil em `profiles` (Supabase) |
-| Progresso dos cursos | Lê/grava em `course_progress` (+ cache local) |
-| Vagas | Lista e publica em `published_jobs` |
-| Checkout / compra de curso | Já gravava via API |
+| Login / cadastro | Usa a API em memória |
+| Progresso dos cursos | Usa API em memória + cache local |
+| Vagas | Lista e publica via API |
+| Checkout / compra de curso | Registra via API |
 
 Sem a variável de ambiente, tudo continua em modo demo (`localStorage` + mock).

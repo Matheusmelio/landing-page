@@ -8,6 +8,7 @@ import type { EnterprisePlan } from '@/lib/enterprisePlan'
 import { useAuth } from '@/auth/AuthContext'
 import { ClientRedirect } from '@/components/ClientRedirect'
 import { Logo } from '@/components/Logo'
+import { registerProfile } from '@/lib/api/profiles'
 import { postAuthRedirect } from '@/lib/authRedirect'
 import { loginHref } from '@/lib/authUrls'
 
@@ -22,6 +23,8 @@ export function RegisterPage() {
   const [companyName, setCompanyName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [isSaving, setIsSaving] = useState(false)
+  const [submitError, setSubmitError] = useState('')
   const [enterprisePlan, setEnterprisePlan] = useState<EnterprisePlan>(() =>
     params.get('plano') === 'avulsa' ? 'standard' : 'contract_employee',
   )
@@ -33,17 +36,31 @@ export function RegisterPage() {
     return <ClientRedirect href={redirectAfterAuth} />
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
+    if (isSaving) return
+
+    setSubmitError('')
     const displayName = name.trim() || 'Usuário'
-    login({
-      email: email.trim() || 'novo@motstart.com',
+    const nextUser = {
+      email: (email.trim() || 'novo@motstart.com').toLowerCase(),
       name: displayName,
+      password,
       role,
       companyName: role === 'enterprise' ? (companyName.trim() || `${displayName} Tech`) : undefined,
       enterprisePlan: role === 'enterprise' ? enterprisePlan : undefined,
-    })
-    router.replace(postAuthRedirect(params.get('redirect')))
+    }
+
+    setIsSaving(true)
+    try {
+      const savedUser = await registerProfile(nextUser)
+      login(savedUser)
+      router.replace(postAuthRedirect(params.get('redirect')))
+    } catch (err) {
+      setSubmitError(err instanceof Error ? err.message : 'Não foi possível salvar o cadastro no banco.')
+    } finally {
+      setIsSaving(false)
+    }
   }
 
   return (
@@ -172,8 +189,13 @@ export function RegisterPage() {
                 </div>
               </fieldset>
             ) : null}
-            <button type="submit" className="btn btn-primary btn-block auth-submit">
-              Cadastrar
+            {submitError ? (
+              <p className="auth-error" role="alert">
+                {submitError}
+              </p>
+            ) : null}
+            <button type="submit" className="btn btn-primary btn-block auth-submit" disabled={isSaving}>
+              {isSaving ? 'Salvando...' : 'Cadastrar'}
             </button>
           </form>
 

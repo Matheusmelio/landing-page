@@ -2731,6 +2731,17 @@ a.profile-course-card {
   margin-top: 0.25rem;
 }
 
+.auth-error {
+  margin: 0;
+  padding: 0.75rem 0.85rem;
+  border: 1px solid rgba(220, 38, 38, 0.28);
+  border-radius: var(--radius-sm);
+  background: rgba(254, 226, 226, 0.55);
+  color: #991b1b;
+  font-size: 0.8125rem;
+  font-weight: 600;
+}
+
 .auth-foot {
   margin: 1.25rem 0 0;
   font-size: 0.8125rem;
