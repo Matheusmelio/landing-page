@@ -1,0 +1,141 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [6 0 R 8 0 R 10 0 R] /Count 3 >>
+endobj
+3 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+4 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold >>
+endobj
+5 0 obj
+<< /Length 4193 >>
+stream
+BT /F2 18 Tf 48 794.00 Td (Entrega Final | Residencia em Software & IA) Tj ET
+BT /F2 12 Tf 48 760.00 Td (Projeto: MotStart - Plataforma de treinamento corporativo) Tj ET
+BT /F1 10.5 Tf 48 734.00 Td (Prazo de entrega: preencher conforme calendario da disciplina.) Tj ET
+BT /F2 14 Tf 48 703.50 Td (1. Link dos Arquivos do MVP "AI-Powered") Tj ET
+BT /F2 12 Tf 48 675.50 Td (1.1 Codigo-fonte e integracoes) Tj ET
+BT /F1 10.5 Tf 48 651.50 Td (Repositorio principal do frontend: https://github.com/Matheusmelio/landing-page.git. O) Tj ET
+BT /F1 10.5 Tf 48 637.00 Td (projeto local esta separado em duas pastas: motstart \(frontend Next.js\) e motstart-api \(API) Tj ET
+BT /F1 10.5 Tf 48 622.50 Td (Express\). A API ja possui repositorio local, mas ainda precisa de remote proprio caso a) Tj ET
+BT /F1 10.5 Tf 48 608.00 Td (equipe deseje publicar backend separado.) Tj ET
+BT /F1 10.5 Tf 48 585.50 Td (Deploy atual do frontend: https://motstart.vercel.app. O projeto foi vinculado na Vercel) Tj ET
+BT /F1 10.5 Tf 48 571.00 Td (como matheus-projects-cde6d436/motstart.) Tj ET
+BT /F2 12 Tf 48 548.50 Td (1.2 Documentacao de integracoes de IA e engenharia de prompt) Tj ET
+BT /F1 10.5 Tf 48 524.50 Td (A aplicacao possui a area "Exercicios IA" no frontend, atualmente como modulo) Tj ET
+BT /F1 10.5 Tf 48 510.00 Td (planejado/placeholder. Nao ha, neste momento, chamada runtime para OpenAI, Anthropic,) Tj ET
+BT /F1 10.5 Tf 48 495.50 Td (LangChain ou modelo local dentro da aplicacao. A IA foi utilizada principalmente no) Tj ET
+BT /F1 10.5 Tf 48 481.00 Td (processo de desenvolvimento assistido: analise de codigo, refatoracao, criacao de rotas,) Tj ET
+BT /F1 10.5 Tf 48 466.50 Td (conexao com Supabase, testes e apoio ao deploy.) Tj ET
+BT /F1 10.5 Tf 48 444.00 Td (Ferramentas utilizadas no desenvolvimento: Cursor Agent, Vercel Plugin, Supabase MCP,) Tj ET
+BT /F1 10.5 Tf 48 429.50 Td (Vercel CLI, Next.js, React, Express e Supabase/Postgres. O Supabase MCP foi configurado em) Tj ET
+BT /F1 10.5 Tf 48 415.00 Td (.cursor/mcp.json para o projeto qriwfwwwxswuaeswztrc.) Tj ET
+BT /F1 10.5 Tf 48 392.50 Td (Prompts centrais usados durante a construcao: separar API do frontend; conectar) Tj ET
+BT /F1 10.5 Tf 48 378.00 Td (Supabase/Postgres; corrigir cadastro/login; garantir que usuario novo nao apareca conectado) Tj ET
+BT /F1 10.5 Tf 48 363.50 Td (a cursos; instalar plugin da Vercel; realizar deploy; gerar documentacao final.) Tj ET
+BT /F2 12 Tf 48 341.00 Td (1.3 Documentacao e guia de implantacao) Tj ET
+BT /F1 10.5 Tf 48 317.00 Td (Frontend: entrar em motstart, instalar dependencias com npm install, configurar .env.local) Tj ET
+BT /F1 10.5 Tf 48 302.50 Td (com NEXT_PUBLIC_API_URL=http://localhost:4000 e rodar npm run dev. A aplicacao abre em) Tj ET
+BT /F1 10.5 Tf 48 288.00 Td (http://localhost:3000.) Tj ET
+BT /F1 10.5 Tf 48 265.50 Td (API: entrar em motstart-api, instalar dependencias com npm install, copiar .env.example) Tj ET
+BT /F1 10.5 Tf 48 251.00 Td (para .env, preencher PORT=4000, CLIENT_ORIGIN=http://localhost:3000, PASSWORD_PEPPER,) Tj ET
+BT /F1 10.5 Tf 48 236.50 Td (SUPABASE_URL e SUPABASE_ANON_KEY ou SUPABASE_SERVICE_ROLE_KEY. Rodar npm run dev.) Tj ET
+BT /F1 10.5 Tf 48 214.00 Td (Banco de dados: Supabase/Postgres. Tabelas criadas: profiles, course_progress, jobs,) Tj ET
+BT /F1 10.5 Tf 48 199.50 Td (creator_courses, plan_orders e course_purchases. Health check esperado: GET) Tj ET
+BT /F1 10.5 Tf 48 185.00 Td (http://localhost:4000/api/health retornando storage=supabase e database=connected.) Tj ET
+BT /F1 10.5 Tf 48 162.50 Td (Observacao de seguranca: em desenvolvimento a API esta funcionando com chave publica/anon e) Tj ET
+BT /F1 10.5 Tf 48 148.00 Td (politicas RLS permissivas. Para producao, recomenda-se usar SUPABASE_SERVICE_ROLE_KEY) Tj ET
+BT /F1 10.5 Tf 48 133.50 Td (somente no backend e restringir as politicas RLS.) Tj ET
+BT /F2 12 Tf 48 111.00 Td (1.4 Repositorio de prompts com rastreabilidade) Tj ET
+BT /F1 10.5 Tf 48 87.00 Td (Sugestao de entrega: criar uma pasta docs/prompts ou um repositorio no GitHub/Drive com os) Tj ET
+BT /F1 10.5 Tf 48 72.50 Td (prompts versionados. Incluir prompts de arquitetura, prompts de correcao de cadastro/login,) Tj ET
+endstream
+endobj
+6 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 5 0 R >>
+endobj
+7 0 obj
+<< /Length 4361 >>
+stream
+BT /F1 10.5 Tf 48 794.00 Td (prompts de integracao Supabase, prompts de deploy e prompts de validacao.) Tj ET
+BT /F2 12 Tf 48 771.50 Td (1.5 Exemplos de prompts que falharam e ajustes) Tj ET
+BT /F1 10.5 Tf 48 747.50 Td (Falha 1: tentativa inicial de conectar Supabase diretamente gerou erros como "Supabase nao) Tj ET
+BT /F1 10.5 Tf 48 733.00 Td (configurado", chave invalida e conflito de porta. Ajuste: primeiro limpar a arquitetura,) Tj ET
+BT /F1 10.5 Tf 48 718.50 Td (separar API e frontend, validar API local, depois reconectar Supabase pelo backend com) Tj ET
+BT /F1 10.5 Tf 48 704.00 Td (variaveis corretas e health check.) Tj ET
+BT /F1 10.5 Tf 48 681.50 Td (Falha 2: usuario novo aparecia com progresso/curso conectado por causa de estado padrao) Tj ET
+BT /F1 10.5 Tf 48 667.00 Td (global. Ajuste: escopar progresso por e-mail do usuario e considerar conectado somente) Tj ET
+BT /F1 10.5 Tf 48 652.50 Td (status em-andamento ou concluido. Validacao: login novo sem cursos em andamento.) Tj ET
+BT /F2 14 Tf 48 630.00 Td (2. Apresentacao e Pitch Final) Tj ET
+BT /F2 12 Tf 48 602.00 Td (2.1 Problematica, solucao proposta e demonstracao) Tj ET
+BT /F1 10.5 Tf 48 578.00 Td (Problema: empresas e alunos precisam de uma plataforma simples para organizar trilhas,) Tj ET
+BT /F1 10.5 Tf 48 563.50 Td (cursos, progresso, vagas e oportunidades. A oportunidade de IA esta em usar assistentes) Tj ET
+BT /F1 10.5 Tf 48 549.00 Td (para acelerar desenvolvimento e, futuramente, personalizar exercicios, quizzes e feedback) Tj ET
+BT /F1 10.5 Tf 48 534.50 Td (automatico.) Tj ET
+BT /F1 10.5 Tf 48 512.00 Td (Solucao: MotStart, plataforma web com cursos, planos, cadastro/login, progresso por) Tj ET
+BT /F1 10.5 Tf 48 497.50 Td (usuario, publicacao de vagas, area empresarial, compra de cursos e integracao com banco) Tj ET
+BT /F1 10.5 Tf 48 483.00 Td (Supabase.) Tj ET
+BT /F1 10.5 Tf 48 460.50 Td (Diferenciais: frontend separado da API, deploy na Vercel, banco persistente em) Tj ET
+BT /F1 10.5 Tf 48 446.00 Td (Supabase/Postgres, rota de health, fluxo de cadastro/login com hash de senha, progressos) Tj ET
+BT /F1 10.5 Tf 48 431.50 Td (por usuario e base preparada para modulo de exercicios com IA.) Tj ET
+BT /F1 10.5 Tf 48 409.00 Td (Demonstracao sugerida: acessar https://motstart.vercel.app, mostrar cadastro/login local) Tj ET
+BT /F1 10.5 Tf 48 394.50 Td (com API, navegar em cursos, comprar/conectar curso, verificar progresso no perfil e mostrar) Tj ET
+BT /F1 10.5 Tf 48 380.00 Td (health da API.) Tj ET
+BT /F2 12 Tf 48 357.50 Td (2.2 Analise de custo e viabilidade economica) Tj ET
+BT /F1 10.5 Tf 48 333.50 Td (Custo atual de IA em runtime: zero, pois a aplicacao ainda nao chama modelos LLM em) Tj ET
+BT /F1 10.5 Tf 48 319.00 Td (producao. O custo de IA ficou concentrado nas ferramentas de desenvolvimento assistido.) Tj ET
+BT /F1 10.5 Tf 48 296.50 Td (Custos atuais de infraestrutura podem iniciar em camadas gratuitas: Vercel para frontend e) Tj ET
+BT /F1 10.5 Tf 48 282.00 Td (Supabase para banco em ambiente inicial. Em escala, os custos crescem por uso de banco,) Tj ET
+BT /F1 10.5 Tf 48 267.50 Td (banda, armazenamento, chamadas da API e, caso implementado, tokens de IA.) Tj ET
+BT /F1 10.5 Tf 48 245.00 Td (Trade-off: YouTube/Vimeo para videos reduzem complexidade no MVP; Mux, Cloudflare Stream ou) Tj ET
+BT /F1 10.5 Tf 48 230.50 Td (Bunny Stream trazem melhor streaming e controle, com custo adicional.) Tj ET
+BT /F2 12 Tf 48 208.00 Td (2.3 Limites, qualidade e aprendizados) Tj ET
+BT /F1 10.5 Tf 48 184.00 Td (Se a IA falhasse, a equipe manteria revisao humana do codigo, validacao por testes manuais,) Tj ET
+BT /F1 10.5 Tf 48 169.50 Td (health checks, leitura de logs e verificacao direta no banco Supabase.) Tj ET
+BT /F1 10.5 Tf 48 147.00 Td (Garantia de qualidade aplicada: lint nos arquivos editados, build/deploy na Vercel, testes) Tj ET
+BT /F1 10.5 Tf 48 132.50 Td (manuais de cadastro, login, progresso e health check. Tambem foram usados advisors do) Tj ET
+BT /F1 10.5 Tf 48 118.00 Td (Supabase para apontar riscos de seguranca/performance.) Tj ET
+BT /F1 10.5 Tf 48 95.50 Td (Limite atual: o modulo de Exercicios IA ainda e uma tela planejada, nao um motor de IA) Tj ET
+BT /F1 10.5 Tf 48 81.00 Td (completo. A equipe deixou para fase futura a correcao automatica por LLM e quizzes) Tj ET
+BT /F1 10.5 Tf 48 66.50 Td (adaptativos reais.) Tj ET
+endstream
+endobj
+8 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 7 0 R >>
+endobj
+9 0 obj
+<< /Length 654 >>
+stream
+BT /F2 12 Tf 48 794.00 Td (2.4 Evolucoes futuras e equipe) Tj ET
+BT /F1 10.5 Tf 48 770.00 Td (Evolucoes futuras: integrar videos por aula; criar tabela course_lessons; conectar provedor) Tj ET
+BT /F1 10.5 Tf 48 755.50 Td (de IA para exercicios; restringir RLS em producao; publicar API em deploy separado;) Tj ET
+BT /F1 10.5 Tf 48 741.00 Td (adicionar painel administrativo, testes automatizados e monitoramento.) Tj ET
+BT /F1 10.5 Tf 48 718.50 Td (Equipe e responsabilidades: preencher com os membros do squad. Sugestao de divisoes:) Tj ET
+BT /F1 10.5 Tf 48 704.00 Td (frontend/UX, backend/API, banco/Supabase, deploy/infra, documentacao e pitch.) Tj ET
+endstream
+endobj
+10 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 3 0 R /F2 4 0 R >> >> /Contents 9 0 R >>
+endobj
+xref
+0 11
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000128 00000 n 
+0000000198 00000 n 
+0000000273 00000 n 
+0000004518 00000 n 
+0000004654 00000 n 
+0000009067 00000 n 
+0000009203 00000 n 
+0000009908 00000 n 
+trailer
+<< /Size 11 /Root 1 0 R >>
+startxref
+10045
+%%EOF

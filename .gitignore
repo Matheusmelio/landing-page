@@ -28,3 +28,6 @@ dist-ssr
 *.sw?
 
 .vercel
+
+# TypeScript incremental build
+*.tsbuildinfo
