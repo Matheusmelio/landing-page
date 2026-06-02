@@ -3548,6 +3548,31 @@ a.btn {
   color: #166534;
 }
 
+.creator-publish__badge--review {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.creator-publish__review {
+  margin-top: 0.85rem;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.creator-publish__review-row {
+  margin: 0;
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  font-size: 0.78rem;
+  color: var(--color-muted);
+}
+
+.creator-publish__review-row strong {
+  color: var(--color-primary);
+  white-space: nowrap;
+}
+
 .creator-publish__card-actions {
   margin-top: 1rem;
   display: flex;

@@ -16,7 +16,7 @@ import { HOME_COURSES } from '../data/homeCourses'
 import { getPlanById } from '../data/plans'
 import { progressPercentForCourse } from '../lib/courseProgressDisplay'
 import { useCourseProgress } from '@/hooks/useCourseProgress'
-import { countByBucket, getActivePlanIdForUser } from '../lib/userCourseProgress'
+import { countAccessibleByBucket, getActivePlanIdForUser, resolveCourseAccess } from '../lib/userCourseProgress'
 
 type EnterpriseUser = AuthUser & { role: 'enterprise' }
 
@@ -39,7 +39,10 @@ export function ProfilePage() {
 function StudentProfile({ user }: { user: { name: string; email: string } }) {
   const [planRevision, setPlanRevision] = useState(0)
   const activePlan = useMemo(
-    () => getPlanById(getActivePlanIdForUser(user.email)),
+    () => {
+      void planRevision
+      return getPlanById(getActivePlanIdForUser(user.email))
+    },
     [user.email, planRevision],
   )
   const [profileTab, setProfileTab] = useState<ProfileTab>('ativos')
@@ -53,18 +56,19 @@ function StudentProfile({ user }: { user: { name: string; email: string } }) {
     }
   }, [])
 
-  const activeCourses = useMemo(
-    () => HOME_COURSES.filter((c) => progress[c.id] === 'em-andamento'),
-    [progress],
+  const hasPlan = Boolean(activePlan)
+  const profileCourses = useMemo(
+    () => HOME_COURSES.filter((c) => resolveCourseAccess(c, progress[c.id], hasPlan).hasAccess),
+    [progress, hasPlan],
   )
-  const progressCounts = useMemo(() => countByBucket(progress), [progress])
+  const progressCounts = useMemo(() => countAccessibleByBucket(progress, hasPlan), [progress, hasPlan])
   const hasConnectedCourses = progressCounts.emAndamento + progressCounts.concluidos > 0
   const estimatedHours = useMemo(
     () =>
-      HOME_COURSES.filter((course) => progress[course.id] === 'em-andamento' || progress[course.id] === 'concluido')
+      HOME_COURSES.filter((course) => resolveCourseAccess(course, progress[course.id], hasPlan).hasAccess)
         .map((course) => getTeachingMeta(course.id).hours)
         .reduce((sum, hours) => sum + hours, 0),
-    [progress],
+    [progress, hasPlan],
   )
 
   return (
@@ -225,7 +229,7 @@ function StudentProfile({ user }: { user: { name: string; email: string } }) {
                 aria-controls="profile-panel-ativos"
                 onClick={() => setProfileTab('ativos')}
               >
-                Cursos ativos ({activeCourses.length})
+                Meus cursos ({profileCourses.length})
               </button>
               <button
                 id="profile-tab-agenda"
@@ -259,7 +263,7 @@ function StudentProfile({ user }: { user: { name: string; email: string } }) {
             aria-labelledby="profile-tab-ativos"
             hidden={profileTab !== 'ativos'}
           >
-            {activeCourses.length === 0 ? (
+            {profileCourses.length === 0 ? (
               <p className="profile-tab-empty" role="status">
                 Nenhum curso em andamento. Explore o{' '}
                 <Link href="/cursos" className="link-purple">
@@ -269,8 +273,10 @@ function StudentProfile({ user }: { user: { name: string; email: string } }) {
               </p>
             ) : (
               <ul className="profile-course-list">
-                {activeCourses.map((c) => {
-                  const pct = progressPercentForCourse(c.id, 'em-andamento')
+                {profileCourses.map((c) => {
+                  const bucket = progress[c.id] ?? 'disponivel'
+                  const access = resolveCourseAccess(c, bucket, hasPlan)
+                  const pct = access.connectedByProgress ? progressPercentForCourse(c.id, bucket) : 0
                   const teaching = getTeachingMeta(c.id)
                   return (
                     <li key={c.id}>
@@ -285,7 +291,7 @@ function StudentProfile({ user }: { user: { name: string; email: string } }) {
                           </div>
                           <span className="pill-tag">{c.category}</span>
                           <p className="profile-course-card__meta">
-                            {teaching.hours}h · {teaching.modules} módulos · {teaching.instructor}
+                            {access.label} · {teaching.hours}h · {teaching.modules} módulos · {teaching.instructor}
                           </p>
                           <div
                             className="progress-bar progress-bar--dark"

@@ -13,7 +13,7 @@ import { HOME_COURSES } from '../data/homeCourses'
 import { progressPercentForCourse } from '../lib/courseProgressDisplay'
 import { getContractTeamProgressDemo } from '../lib/enterpriseTeamProgress'
 import { useCourseProgress } from '@/hooks/useCourseProgress'
-import { countByBucket, hasActivePlanForUser, isConnectedCourse } from '../lib/userCourseProgress'
+import { countAccessibleByBucket, hasActivePlanForUser, resolveCourseAccess } from '../lib/userCourseProgress'
 
 type TabId = 'em-andamento' | 'disponiveis' | 'concluidos'
 
@@ -21,12 +21,6 @@ function bucketForTab(tab: TabId): CourseBucket {
   if (tab === 'em-andamento') return 'em-andamento'
   if (tab === 'disponiveis') return 'disponivel'
   return 'concluido'
-}
-
-function statusLabel(b: CourseBucket): string {
-  if (b === 'em-andamento') return 'Em Andamento'
-  if (b === 'disponivel') return 'Disponível'
-  return 'Concluído'
 }
 
 const GUEST_POPULAR = HOME_COURSES.slice(0, 9)
@@ -46,13 +40,13 @@ export function HomePage() {
 
   const hasPlan = Boolean(user && hasActivePlanForUser(user.email))
 
-  const counts = useMemo(() => countByBucket(progress), [progress])
+  const counts = useMemo(() => countAccessibleByBucket(progress, hasPlan), [progress, hasPlan])
   const hasConnectedCourses = counts.emAndamento + counts.concluidos > 0
 
   const visibleCourses = useMemo(() => {
     const bucket = bucketForTab(activeTab)
-    return HOME_COURSES.filter((c) => progress[c.id] === bucket)
-  }, [progress, activeTab])
+    return HOME_COURSES.filter((c) => resolveCourseAccess(c, progress[c.id], hasPlan).displayBucket === bucket)
+  }, [progress, activeTab, hasPlan])
 
   const catalogTotal = HOME_COURSES.length
   const completionPct =
@@ -460,16 +454,16 @@ export function HomePage() {
               ) : (
                 visibleCourses.map((c) => {
                   const bucket = progress[c.id] ?? 'disponivel'
-                  const pct = progressPercentForCourse(c.id, bucket)
+                  const access = resolveCourseAccess(c, bucket, hasPlan)
+                  const pct = access.connectedByProgress ? progressPercentForCourse(c.id, bucket) : 0
                   const showPlatformSeal = hasPlan && c.isPlatformCourse
-                  const connected = isConnectedCourse(bucket)
-                  const href = connected || (hasPlan && c.isPlatformCourse) ? `/curso/${c.id}` : `/curso/${c.id}/comprar`
+                  const href = access.hasAccess ? `/curso/${c.id}` : `/curso/${c.id}/comprar`
                   return (
                     <Link key={c.id} href={href} className="home-course-card">
                       <div className="home-course-card__image-wrap">
                         <img src={c.image} alt="" className="home-course-card__image" />
                         <span className="badge badge--category">{c.category}</span>
-                        <span className="badge badge--status">{statusLabel(bucket)}</span>
+                        <span className="badge badge--status">{access.label}</span>
                         {showPlatformSeal ? (
                           <div className="home-course-card__platform-mark" title="Curso oficial MotStart">
                             <img src={IMAGES.logoIcon} alt="" />
@@ -482,10 +476,10 @@ export function HomePage() {
                           <span>★ {c.rating}</span>
                           <span>{c.students.toLocaleString('pt-BR')} alunos</span>
                         </p>
-                        {connected ? (
+                        {access.hasAccess ? (
                           <div className="home-course-card__progress-block">
                             <div className="home-course-card__progress-row">
-                              <span>{bucket === 'concluido' ? 'Concluído' : 'Progresso'}</span>
+                              <span>{access.coveredByPlan && !access.connectedByProgress ? 'Pronto para iniciar' : 'Progresso'}</span>
                               <span>{pct}%</span>
                             </div>
                             <div

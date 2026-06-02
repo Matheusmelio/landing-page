@@ -1,5 +1,5 @@
 import { HOME_COURSES } from '../data/homeCourses'
-import type { CourseBucket } from '../data/homeCourses'
+import type { CourseBucket, HomeCourseItem } from '../data/homeCourses'
 import { fetchProgressFromApi, saveProgressToApi, updateCourseBucketOnApi } from './api/progress'
 import { apiFetch, isApiEnabled } from './api/http'
 
@@ -153,4 +153,74 @@ export function countByBucket(progress: Record<string, CourseBucket>) {
 
 export function isConnectedCourse(bucket: CourseBucket | undefined): boolean {
   return bucket === 'em-andamento' || bucket === 'concluido'
+}
+
+export type CourseAccessState = {
+  hasAccess: boolean
+  connectedByProgress: boolean
+  coveredByPlan: boolean
+  displayBucket: CourseBucket
+  label: string
+}
+
+export function resolveCourseAccess(
+  course: HomeCourseItem,
+  bucket: CourseBucket | undefined,
+  hasPlan: boolean,
+): CourseAccessState {
+  const connectedByProgress = isConnectedCourse(bucket)
+  const coveredByPlan = hasPlan && course.isPlatformCourse
+
+  if (bucket === 'concluido') {
+    return {
+      hasAccess: true,
+      connectedByProgress: true,
+      coveredByPlan,
+      displayBucket: 'concluido',
+      label: 'Concluído',
+    }
+  }
+
+  if (connectedByProgress) {
+    return {
+      hasAccess: true,
+      connectedByProgress: true,
+      coveredByPlan,
+      displayBucket: 'em-andamento',
+      label: 'Em andamento',
+    }
+  }
+
+  if (coveredByPlan) {
+    return {
+      hasAccess: true,
+      connectedByProgress: false,
+      coveredByPlan: true,
+      displayBucket: 'em-andamento',
+      label: 'Liberado pelo plano',
+    }
+  }
+
+  return {
+    hasAccess: false,
+    connectedByProgress: false,
+    coveredByPlan: false,
+    displayBucket: 'disponivel',
+    label: 'Disponível',
+  }
+}
+
+export function countAccessibleByBucket(progress: Record<string, CourseBucket>, hasPlan: boolean) {
+  let emAndamento = 0
+  let disponiveis = 0
+  let concluidos = 0
+
+  for (const course of HOME_COURSES) {
+    const access = resolveCourseAccess(course, progress[course.id], hasPlan)
+    if (access.displayBucket === 'em-andamento') emAndamento++
+    else if (access.displayBucket === 'concluido') concluidos++
+    else disponiveis++
+  }
+
+  return { emAndamento, disponiveis, concluidos }
 }

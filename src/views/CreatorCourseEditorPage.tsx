@@ -19,7 +19,14 @@ import {
   type CreatorExerciseRow,
   type CreatorVideoRow,
 } from '../lib/creatorCourseContent'
-import { getCreatorCourseById } from '../lib/creatorCourses'
+import { getCreatorCourseById, getCreatorCourseReviewRemainingMs, getCreatorCourseReviewStatus } from '../lib/creatorCourses'
+
+function formatReviewCountdown(ms: number): string {
+  const totalSeconds = Math.ceil(ms / 1000)
+  const minutes = Math.floor(totalSeconds / 60)
+  const seconds = totalSeconds % 60
+  return `${minutes}:${seconds.toString().padStart(2, '0')}`
+}
 
 export function CreatorCourseEditorPage() {
   const params = useParams()
@@ -29,12 +36,19 @@ export function CreatorCourseEditorPage() {
 
   const [content, setContent] = useState<CreatorCourseContent | null>(null)
   const [savedHint, setSavedHint] = useState(false)
+  const [nowMs, setNowMs] = useState(() => Date.now())
 
   useEffect(() => {
     if (!course || !user) return
     if (course.authorEmail.toLowerCase() !== user.email.toLowerCase()) return
     setContent(ensureCreatorCourseContent(courseId))
   }, [course, courseId, user])
+
+  useEffect(() => {
+    if (!course || getCreatorCourseReviewStatus(course, nowMs) === 'aprovado') return
+    const id = window.setInterval(() => setNowMs(Date.now()), 1000)
+    return () => window.clearInterval(id)
+  }, [course, nowMs])
 
   if (!user) {
     return <ClientRedirect href={loginHref(`/publicar-curso/${courseId}/editar`)} />
@@ -50,6 +64,38 @@ export function CreatorCourseEditorPage() {
 
   if (course.authorEmail.toLowerCase() !== user.email.toLowerCase()) {
     return <ClientRedirect href="/publicar-curso" />
+  }
+
+  const reviewStatus = getCreatorCourseReviewStatus(course, nowMs)
+
+  if (reviewStatus === 'em-analise') {
+    const remainingMs = getCreatorCourseReviewRemainingMs(course, nowMs)
+
+    return (
+      <div className="page">
+        <MainHeader />
+        <div className="container section-wrap section-wrap--top creator-editor">
+          <p className="creator-editor__back">
+            <Link href="/publicar-curso" className="link-purple">
+              ← Voltar a meus cursos
+            </Link>
+          </p>
+          <section className="creator-publish__callout" aria-labelledby="review-wait-heading">
+            <h1 id="review-wait-heading" className="page-title">
+              Curso em análise de segurança
+            </h1>
+            <p className="page-lead">
+              Antes de liberar edição e publicação, o sistema valida os dados enviados: título, categoria, descrição, preço e
+              autoria.
+            </p>
+            <p className="creator-publish__review-row">
+              <span>Tempo restante da análise</span>
+              <strong>{formatReviewCountdown(remainingMs)}</strong>
+            </p>
+          </section>
+        </div>
+      </div>
+    )
   }
 
   if (!content) {
