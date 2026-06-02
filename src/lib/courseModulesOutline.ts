@@ -3,7 +3,14 @@
 export type CourseModuleOutline = {
   id: string
   title: string
-  lessons: { id: string; title: string; durationMin: number }[]
+  lessons: CourseLessonOutline[]
+}
+
+export type CourseLessonOutline = {
+  id: string
+  title: string
+  durationMin: number
+  videoUrl?: string
 }
 
 const TITLES = [
@@ -31,6 +38,14 @@ export function getCourseOutline(courseId: string): CourseModuleOutline[] {
       title: `Módulo ${m + 1}: ${TITLES[m % TITLES.length]}`,
       lessons,
     })
+  }
+  if (courseId === 'c2' && out[0]?.lessons[0]) {
+    out[0].lessons[0] = {
+      ...out[0].lessons[0],
+      title: 'Aula 1: Introdução ao Python',
+      durationMin: 12,
+      videoUrl: 'https://www.youtube.com/embed/03za1CY5I1A',
+    }
   }
   return out
 }

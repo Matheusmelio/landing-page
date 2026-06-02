@@ -128,16 +128,26 @@ export function CoursePlayerPage() {
 
         <main className="course-player-main">
           <div className="course-player-video">
-            <div className="course-player-video__placeholder" role="img" aria-label="Área do player de vídeo (demonstração)">
-              <svg width="64" height="64" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-                <path
-                  d="M8 5v14l11-7L8 5z"
-                  fill="currentColor"
-                  opacity="0.85"
-                />
-              </svg>
-              <span>Player de vídeo (demo)</span>
-            </div>
+            {activeLesson?.videoUrl ? (
+              <iframe
+                className="course-player-video__iframe"
+                src={activeLesson.videoUrl}
+                title={activeLesson.title}
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                allowFullScreen
+              />
+            ) : (
+              <div className="course-player-video__placeholder" role="img" aria-label="Área do player de vídeo (demonstração)">
+                <svg width="64" height="64" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+                  <path
+                    d="M8 5v14l11-7L8 5z"
+                    fill="currentColor"
+                    opacity="0.85"
+                  />
+                </svg>
+                <span>Player de vídeo (demo)</span>
+              </div>
+            )}
           </div>
           <h1 className="course-player-lesson-title">{activeLesson?.title ?? 'Selecione uma aula'}</h1>
           <p className="course-player-lesson-desc">

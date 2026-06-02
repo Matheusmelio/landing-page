@@ -4721,6 +4721,15 @@ a.btn {
   margin-bottom: 1rem;
 }
 
+.course-player-video__iframe {
+  width: 100%;
+  aspect-ratio: 16 / 9;
+  border: 0;
+  border-radius: var(--radius-md);
+  display: block;
+  background: #111827;
+}
+
 .course-player-video__placeholder {
   aspect-ratio: 16 / 9;
   border-radius: var(--radius-md);
