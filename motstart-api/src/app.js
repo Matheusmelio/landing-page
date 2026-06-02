@@ -16,12 +16,14 @@ const configuredOrigins = (process.env.CLIENT_ORIGIN ?? 'http://localhost:3000')
   .map((o) => o.trim())
   .filter(Boolean)
 
-function isAllowedDevOrigin(origin) {
+function isAllowedOrigin(origin) {
   if (!origin) return true
   if (configuredOrigins.includes(origin)) return true
 
   try {
     const url = new URL(origin)
+    if (url.hostname.endsWith('.vercel.app')) return true
+
     const isDevHost =
       url.hostname === 'localhost' ||
       url.hostname === '127.0.0.1' ||
@@ -35,7 +37,7 @@ function isAllowedDevOrigin(origin) {
 app.use(
   cors({
     origin(origin, callback) {
-      if (isAllowedDevOrigin(origin)) {
+      if (isAllowedOrigin(origin)) {
         callback(null, true)
         return
       }

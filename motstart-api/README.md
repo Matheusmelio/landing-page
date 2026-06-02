@@ -8,20 +8,15 @@ API REST em **Node.js** com **Express** e persistência em **Supabase/Postgres**
 
 ```
 motstart-api/
+├── api/index.js          ← entrada serverless (Vercel)
+├── vercel.json
 ├── package.json
 ├── .env.example          ← copie para .env
 └── src/
-    ├── index.js          ← entrada (porta 4000)
+    ├── index.js          ← entrada local (porta 4000)
     ├── app.js            ← Express + rotas
     ├── middleware/
     ├── routes/           ← endpoints
-    │   ├── health.js
-    │   ├── checkout.js
-    │   ├── coursePurchases.js
-    │   ├── profiles.js
-    │   ├── progress.js
-    │   ├── jobs.js
-    │   └── creatorCourses.js
     ├── config/           ← cliente Supabase
     └── utils/
 ```
@@ -63,6 +58,26 @@ SUPABASE_ANON_KEY=sua_chave_anon_ou_publishable
 | GET | `/api/creator-courses` | Cursos do criador |
 | POST | `/api/creator-courses` | Publicar curso |
 
+## Deploy na Vercel
+
+1. Importe o repositório `MotStart_api` em [vercel.com](https://vercel.com).
+2. **Framework Preset:** Other (sem build do Next).
+3. Em **Environment Variables**, configure:
+   - `SUPABASE_URL`
+   - `SUPABASE_ANON_KEY` ou `SUPABASE_SERVICE_ROLE_KEY`
+   - `CLIENT_ORIGIN` (URL do frontend, ex. `https://seu-app.vercel.app`)
+   - `PASSWORD_PEPPER`
+4. Faça o deploy.
+
+A pasta `api/index.js` exporta o Express como função serverless; `vercel.json` encaminha todas as rotas para ela.
+
+URLs de teste após o deploy:
+
+- `https://seu-projeto.vercel.app/api/health`
+- `https://seu-projeto.vercel.app/`
+
+Origens `*.vercel.app` são aceitas automaticamente no CORS (além de `CLIENT_ORIGIN`).
+
 ## Integrar com o Next.js
 
 No `.env.local` do frontend (`motstart/`):
@@ -71,4 +86,10 @@ No `.env.local` do frontend (`motstart/`):
 NEXT_PUBLIC_API_URL=http://localhost:4000
 ```
 
-Reinicie `npm run dev` do frontend.
+Em produção na Vercel:
+
+```env
+NEXT_PUBLIC_API_URL=https://seu-projeto-api.vercel.app
+```
+
+Reinicie `npm run dev` do frontend após alterar variáveis locais.
